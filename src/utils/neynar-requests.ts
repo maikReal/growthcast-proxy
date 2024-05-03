@@ -34,3 +34,20 @@ export const postFramesThread = async (userContent: Array<FrameContent>) => {
 
   return jsonResponse;
 };
+
+export const fetchChannelForFid = async (fid: number) => {
+  const channelsNumberLimit = 20;
+
+  const { channels } = await client.fetchUsersActiveChannels(fid, {
+    limit: channelsNumberLimit,
+  });
+
+  const usersChannels = channels?.map((element) => {
+    return {
+      channelName: element.name,
+      channelId: element.id,
+    };
+  });
+
+  return usersChannels;
+};

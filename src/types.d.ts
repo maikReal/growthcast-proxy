@@ -27,3 +27,8 @@ interface MyCasts {
   recasts: number;
   timestamp: string;
 }
+
+export interface Channel {
+  channelName?: string;
+  channelId: string;
+}
