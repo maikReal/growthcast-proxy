@@ -5,7 +5,7 @@ import {
   generateFrameCreationRequest,
   generateSeveralFrameLinks,
 } from "./framesGenerator";
-import { FrameContent } from "@/types";
+import { ThreadContent } from "@/types";
 
 // TODO: Understand how 'cursor' param works for neyanr methods. I can use it for pagination
 export const getCastsByFid = async (fid: number, username: string) => {
@@ -14,7 +14,7 @@ export const getCastsByFid = async (fid: number, username: string) => {
   return processUserCasts(fidCasts, username);
 };
 
-export const postFramesThread = async (userContent: Array<FrameContent>) => {
+export const postFramesThread = async (userContent: Array<ThreadContent>) => {
   const contentWithLinks = await generateSeveralFrameLinks(userContent);
   const frameInfo = await generateFrameCreationRequest(contentWithLinks);
 

@@ -3,10 +3,10 @@ export interface UserInfo {
   fid: string;
 }
 
-export interface FrameContent {
+export interface ThreadContent {
   order: number;
   text: string;
-  imgLink: string;
+  imgLink?: string;
   uuid: string;
 }
 
@@ -17,6 +17,12 @@ export interface MyCastsStatType {
   totalReplies: number | 0;
   totalRecasts: number | 0;
   casts: Array<MyCasts>;
+}
+
+export interface ThreadCast {
+  content: Array<ThreadContent>;
+  signerUuid: string;
+  channelId: string;
 }
 
 interface MyCasts {
@@ -31,4 +37,8 @@ interface MyCasts {
 export interface Channel {
   channelName?: string;
   channelId: string;
+}
+
+export interface CastEmbedLinks {
+  url: string;
 }

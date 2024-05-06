@@ -23,7 +23,7 @@ export async function GET(
     } = await neynarClient.lookupUserByFid(fid);
     return NextResponse.json({ user }, { status: 200 });
   } catch (err) {
-    console.log("/api/user/[fid]", err);
+    console.log("ERROR: /api/user/[fid]", err);
     if (isApiErrorResponse(err)) {
       return NextResponse.json(
         { ...err.response.data },

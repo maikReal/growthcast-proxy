@@ -1,4 +1,4 @@
-import { FrameContent } from "@/types";
+import { ThreadContent } from "@/types";
 import axios from "axios";
 import FormData from "form-data";
 import { v4 as uuidv4 } from "uuid";
@@ -92,7 +92,7 @@ export const getImageLink = async (content: string) => {
 };
 
 export const generateSeveralFrameLinks = async (
-  content: Array<FrameContent>
+  content: Array<ThreadContent>
 ) => {
   // console.log(content);
   const tasks = content.map(async (item) => ({
@@ -106,16 +106,16 @@ export const generateSeveralFrameLinks = async (
 };
 
 interface FramePageProps {
-  currentPage: FrameContent | null;
-  previousPage?: FrameContent;
-  nextPage?: FrameContent;
+  currentPage: ThreadContent | null;
+  previousPage?: ThreadContent;
+  nextPage?: ThreadContent;
 }
 
 // PREPARE A CONFIG FOR A FRAME CREATION
 class FramePage {
-  currentPage: FrameContent | null;
-  previousPage?: FrameContent;
-  nextPage?: FrameContent;
+  currentPage: ThreadContent | null;
+  previousPage?: ThreadContent;
+  nextPage?: ThreadContent;
 
   constructor({ currentPage, previousPage, nextPage }: FramePageProps) {
     this.currentPage = currentPage;
@@ -137,7 +137,7 @@ class FramePage {
 }
 
 export const generateFrameCreationRequest = async (
-  data: Array<FrameContent>
+  data: Array<ThreadContent>
 ) => {
   const threadLength = data.length;
 
@@ -213,7 +213,7 @@ const getOneFrameSettings = (pages: FramePage, threadLength: number) => {
 
   const pageFrameTemplate: NeynarFramePage = {
     image: {
-      url: pages.currentPage.imgLink,
+      url: pages.currentPage.imgLink!,
       aspect_ratio: "1.91:1",
     },
     title: `Thread 🧵 // Page ${pages.currentPage.order}/${threadLength}`,
@@ -226,7 +226,7 @@ const getOneFrameSettings = (pages: FramePage, threadLength: number) => {
 };
 
 const generateButton = (
-  page: FrameContent,
+  page: ThreadContent,
   hasTwoButtons: boolean,
   isPrevious: boolean
 ): NeynarPageButton => {

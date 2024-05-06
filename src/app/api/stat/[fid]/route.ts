@@ -18,12 +18,13 @@ export const GET = async (
 ) => {
   const currentHeaders = headers();
 
-  console.log("Stat API headers: ", request.headers);
+  // console.log("Stat API headers: ", request.headers);
 
   if (!isAuth(currentHeaders)) {
     return nonAuthHttpResponse();
   }
 
+  console.log("I am in api/stat/[fid]");
   try {
     const { data } = await axios.get<{ user: User }>(
       `${process.env.NEXT_PUBLIC_DOMAIN}/api/user/${params.fid}`

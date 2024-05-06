@@ -64,7 +64,7 @@ export const contentDecryptor = (hash: string | null) => {
   }
 
   if (!secretKey || !iv) {
-    console.log("Secret vars:", secretKey, iv);
+    // console.log("Secret vars:", secretKey, iv);
     throw new Error(
       "ENCRYPTION_KEY or/and ENCRYPTION_IV is not defined in .env"
     );

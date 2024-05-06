@@ -60,7 +60,7 @@ export const AppProvider: FC<Props> = ({ children }) => {
   const lookupUser = useCallback(async () => {
     if (user && user.fid) {
       try {
-        console.log(`User data: ${user}`);
+        // console.log(`User data: ${user}`);
         const { data } = await axios.get<{ user: User }>(
           `/api/user/${user.fid}`
         );

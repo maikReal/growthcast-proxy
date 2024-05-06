@@ -17,12 +17,13 @@ export const GET = async (
 ) => {
   const currentHeaders = headers();
 
-  console.log("Stat API headers: ", request.headers);
+  //   console.log("Stat API headers: ", request.headers);
 
   if (!isAuth(currentHeaders)) {
     return nonAuthHttpResponse();
   }
 
+  console.log("I am in api/channels/[fid]");
   try {
     let userChannels: Array<Channel> =
       (await fetchChannelForFid(params.fid)) || [];

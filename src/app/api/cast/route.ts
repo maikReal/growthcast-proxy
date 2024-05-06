@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import neynarClient from "@/clients/neynar";
 import { isApiErrorResponse } from "@neynar/nodejs-sdk";
+import { CastEmbedLinks } from "@/types";
 
 export async function GET(request: NextRequest) {
   const fid = (await await request.json()) as { fid: number };
@@ -8,15 +9,23 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { signerUuid, text } = (await request.json()) as {
+  const { signerUuid, embeds, channelId } = (await request.json()) as {
     signerUuid: string;
-    text: string;
+    embeds: Array<CastEmbedLinks>;
+    channelId: string;
   };
 
   try {
-    const { hash } = await neynarClient.publishCast(signerUuid, text);
+    const { hash } = await neynarClient.publishCast(
+      signerUuid,
+      "Here is my thread powered by @warpdrive 👇",
+      {
+        embeds: embeds,
+        channelId: channelId,
+      }
+    );
     return NextResponse.json(
-      { message: `Cast with hash ${hash} published successfully` },
+      { castHash: hash },
       { status: 200 }
     );
   } catch (err) {

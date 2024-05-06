@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { NextApiResponse } from "next";
+import axios, { AxiosError } from "axios";
 
 import {
   contentEncrypter,
@@ -13,6 +14,7 @@ import {
 
 import { headers } from "next/headers";
 import { postFramesThread } from "@/utils/neynar-requests";
+import { ThreadCast } from "@/types";
 
 export async function POST(request: NextRequest, response: NextApiResponse) {
   if (request.method === "POST") {
@@ -23,13 +25,33 @@ export async function POST(request: NextRequest, response: NextApiResponse) {
     }
 
     try {
-      const content = await request.json();
+      const threadInfo: ThreadCast = await request.json();
 
-      const frameRdequest = await postFramesThread(content);
+      const framePostResponse = await postFramesThread(threadInfo.content);
 
-      console.log(frameRdequest);
+      console.log(framePostResponse);
 
-      return successHttpResponse(frameRdequest);
+      console.log("Your frame link: ", framePostResponse.link);
+
+      const {
+        data: { castHash },
+      } = await axios.post<{ castHash: string }>(
+        `${process.env.NEXT_PUBLIC_DOMAIN}/api/cast`,
+        {
+          signerUuid: threadInfo.signerUuid,
+          embeds: [
+            {
+              url: framePostResponse.link,
+            },
+          ],
+          channelId: threadInfo.channelId,
+        }
+      );
+
+      return successHttpResponse({
+        frameLink: framePostResponse.link,
+        castHash: castHash,
+      });
     } catch (error) {
       console.log(error);
       return internalServerErrorHttpResponse(error);

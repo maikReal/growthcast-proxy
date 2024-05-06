@@ -4,7 +4,7 @@ import { generateCastLink } from "./helpers";
 import { MyCastsStatType } from "@/types";
 
 export const processUserCasts = (neynarData: CastsResponse, fname: string) => {
-  console.log("Neynar data: ", neynarData);
+  // console.log("Neynar data: ", neynarData);
   let userCastsStat: MyCastsStatType = {
     totalCasts: 0,
     totalLikes: 0,
