@@ -42,3 +42,21 @@ export interface Channel {
 export interface CastEmbedLinks {
   url: string;
 }
+
+export interface RequestData {
+  fid: string;
+  signerUuid?: string;
+  metadata: {
+    [key: string | number]: Object;
+  };
+}
+
+export interface RequestData {
+  fid: string;
+  signerUuid?: string;
+  metadata?: {
+    [key: string | number]: Object;
+  };
+  iat: number;
+  exp: number;
+}

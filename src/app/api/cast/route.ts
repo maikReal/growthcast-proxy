@@ -24,10 +24,7 @@ export async function POST(request: NextRequest) {
         channelId: channelId,
       }
     );
-    return NextResponse.json(
-      { castHash: hash },
-      { status: 200 }
-    );
+    return NextResponse.json({ castHash: hash }, { status: 200 });
   } catch (err) {
     console.log("/api/cast", err);
     if (isApiErrorResponse(err)) {

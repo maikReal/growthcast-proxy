@@ -1,5 +1,4 @@
 "use client";
-import { useSearchParams } from "next/navigation";
 import {
   useContext,
   createContext,
@@ -13,17 +12,15 @@ import {
 import axios, { AxiosError } from "axios";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v1";
 import useLocalStorage from "@/hooks/use-local-storage-state";
-import { removeSearchParams, verifyUser } from "@/utils/helpers";
 import { UserInfo } from "@/types";
 import { toast } from "react-toastify";
 import { ErrorRes } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { useRouter } from "next/router";
 
 type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export enum ScreenState {
-  Signin = "signin",
-  Home = "home",
+  Signin = "[login_screen]-signin",
+  Home = "[main_screen]-home",
 }
 
 interface Props {
@@ -51,7 +48,6 @@ export const AppProvider: FC<Props> = ({ children }) => {
   const [pfp, setPfp] = useState<string | null>(null);
   const [signerUuid, setSignerUuid] = useState<string | null>(null);
   const [fid, setFid] = useState<string | null>(null);
-  const searchParams = useSearchParams();
   const [user, setUser, removeUser] = useLocalStorage<UserInfo | null>(
     "user",
     null
@@ -60,7 +56,6 @@ export const AppProvider: FC<Props> = ({ children }) => {
   const lookupUser = useCallback(async () => {
     if (user && user.fid) {
       try {
-        // console.log(`User data: ${user}`);
         const { data } = await axios.get<{ user: User }>(
           `/api/user/${user.fid}`
         );
@@ -80,12 +75,6 @@ export const AppProvider: FC<Props> = ({ children }) => {
   }, [user]);
 
   useEffect(() => {
-    // Read from URL query params if we need to support old flow
-    // if (searchParams.get("signer_uuid") && searchParams.get("fid")) {
-    //     setSignerUuid(searchParams.get("signer_uuid"));
-    //     setFid(searchParams.get("fid"));
-    // }
-
     lookupUser();
   }, [lookupUser]);
 
@@ -94,14 +83,14 @@ export const AppProvider: FC<Props> = ({ children }) => {
       setScreen(ScreenState.Home);
     } else {
       if (signerUuid && fid) {
-        const verifiedUser = await verifyUser(signerUuid, fid);
-        if (verifiedUser) {
-          setUser({ signerUuid, fid });
-          setScreen(ScreenState.Home);
-        } else {
-          removeUser();
-          setScreen(ScreenState.Signin);
-        }
+        // const verifiedUser = await verifyUser(signerUuid, fid);
+        // if (verifiedUser) {
+        //   setUser({ signerUuid, fid });
+        //   setScreen(ScreenState.Home);
+        // } else {
+        //   removeUser();
+        //   setScreen(ScreenState.Signin);
+        // }
       } else {
         setScreen(ScreenState.Signin);
       }

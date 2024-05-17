@@ -8,7 +8,7 @@ import SignInButton from "@/components/SignInButton";
 
 const Signin = () => {
   const { screen, setScreen } = useApp();
-  const [_, setUser, removeUser] = useLocalStorage("user");
+  const [user, setUser, removeUser] = useLocalStorage("user");
   const [isClient, setIsClient] = useState(false);
 
   const publicDomain = process.env.NEXT_PUBLIC_DOMAIN;
@@ -56,10 +56,25 @@ const Signin = () => {
 
   useEffect(() => {
     window.onSignInSuccess = (data) => {
+      // console.log("[DEBUG - Screens/Signin] User's auth data: ", {
+      //   signerUuid: data.signer_uuid,
+      //   fid: data.fid,
+      // });
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          signerUuid: data.signer_uuid,
+          fid: data.fid,
+        })
+      );
+
       setUser({
         signerUuid: data.signer_uuid,
         fid: data.fid,
       });
+
+      console.log("User", user);
       setSignerUuid(data.signer_uuid);
       setFid(data.fid);
 
@@ -67,7 +82,7 @@ const Signin = () => {
 
       setTimeout(() => {
         window.location.href = publicDomain;
-      }, 3000);
+      }, 6000);
     };
 
     return () => {

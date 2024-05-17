@@ -19,7 +19,7 @@ export const postFramesThread = async (userContent: Array<ThreadContent>) => {
   const frameInfo = await generateFrameCreationRequest(contentWithLinks);
 
   const neynarHost = "https://api.neynar.com/v2/farcaster/frame";
-  console.log("Frame request: ", frameInfo);
+  console.log("[DEBUG - utils/neynar-requests.ts] Frame request: ", frameInfo);
   const neynarResponse = await fetch(neynarHost, {
     method: "POST",
     body: JSON.stringify(frameInfo),
