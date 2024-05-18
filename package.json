@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "npm run prep",
-    "prep": "npm run exp && node out.js",
-    "exp": "next build && next export",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
