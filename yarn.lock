@@ -183,12 +183,13 @@
   integrity sha512-RkTf+KbAD0SgYdVn1XzqE/+sIxYGB7NLMZRn9I4Z24afrhUpVJx6L8hsRnIwxz3ERE2NFURNliPjJ2QNfnWicQ==
 
 "@neynar/nodejs-sdk@^1.3.0":
-  version "1.20.0"
-  resolved "https://registry.npmjs.org/@neynar/nodejs-sdk/-/nodejs-sdk-1.20.0.tgz"
-  integrity sha512-ufXmLZVkCExq5Jqmjgtbo1ey2rLDCNsteGRufnY7j8ymfm0LLyb8aeqxLq7FA7mYssXyXoghHS5nllBEm9Pimg==
+  version "1.24.0"
+  resolved "https://registry.npmjs.org/@neynar/nodejs-sdk/-/nodejs-sdk-1.24.0.tgz"
+  integrity sha512-oBPl4Zr1xAdGzD4FrYDGSj2v2RcT3ZawAieW5XoE6HF63ftBasTDoMtZPVwbkn4qCUaXIoK8wZAHO/Saww7k4Q==
   dependencies:
     "@openapitools/openapi-generator-cli" "^2.7.0"
     axios "^1.6.2"
+    semver "^7.6.0"
     viem "^1.19.9"
 
 "@noble/curves@~1.2.0", "@noble/curves@1.2.0":
@@ -3112,7 +3113,7 @@ semver@^6.3.1:
   resolved "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
-semver@^7.3.5, semver@^7.5.4:
+semver@^7.3.5, semver@^7.5.4, semver@^7.6.0:
   version "7.6.0"
   resolved "https://registry.npmjs.org/semver/-/semver-7.6.0.tgz"
   integrity sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==
