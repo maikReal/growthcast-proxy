@@ -1,15 +1,13 @@
 import { NextRequest } from "next/server";
 import { NextApiResponse } from "next";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 import {
-  contentEncrypter,
-  contentDecryptor,
-  isAuth,
   nonAuthHttpResponse,
   successHttpResponse,
   apiErrorHttpNotAllowed,
   internalServerErrorHttpResponse,
+  verifyAuth,
 } from "@/utils/helpers";
 
 import { headers } from "next/headers";
@@ -20,7 +18,7 @@ export async function POST(request: NextRequest, response: NextApiResponse) {
   if (request.method === "POST") {
     const currentHeaders = headers();
 
-    if (!isAuth(currentHeaders)) {
+    if (!verifyAuth(currentHeaders)) {
       return nonAuthHttpResponse();
     }
 
@@ -29,9 +27,14 @@ export async function POST(request: NextRequest, response: NextApiResponse) {
 
       const framePostResponse = await postFramesThread(threadInfo.content);
 
-      console.log(framePostResponse);
-
-      console.log("Your frame link: ", framePostResponse.link);
+      console.log(
+        "[DEBUG - api/thread] Fram generation process response: ",
+        framePostResponse
+      );
+      console.log(
+        "[DEBUG - api/thread] Generated frame link for a thread: ",
+        framePostResponse.link
+      );
 
       const {
         data: { castHash },
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest, response: NextApiResponse) {
         castHash: castHash,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return internalServerErrorHttpResponse(error);
     }
   } else {

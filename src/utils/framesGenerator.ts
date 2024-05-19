@@ -1,7 +1,6 @@
 import { ThreadContent } from "@/types";
 import axios from "axios";
 import FormData from "form-data";
-import { v4 as uuidv4 } from "uuid";
 import { createCanvas, CanvasRenderingContext2D } from "canvas";
 import {
   NeynarFrameCreationRequest,
@@ -72,7 +71,7 @@ const uploadFile = async (imageBuffer: Buffer) => {
       {
         headers: {
           ...formData.getHeaders(),
-          Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`, // Replace YOUR_CLIENT_ID with your actual Imgur client ID
+          Authorization: `Client-ID ${process.env.NEXT_PUBLIC_IMGUR_CLIENT_ID}`, // Replace YOUR_CLIENT_ID with your actual Imgur client ID
         },
       }
     );
@@ -94,7 +93,6 @@ export const getImageLink = async (content: string) => {
 export const generateSeveralFrameLinks = async (
   content: Array<ThreadContent>
 ) => {
-  // console.log(content);
   const tasks = content.map(async (item) => ({
     ...item,
     imgLink: await getImageLink(item.text),
@@ -141,15 +139,12 @@ export const generateFrameCreationRequest = async (
 ) => {
   const threadLength = data.length;
 
-  // console.log("Images data: ", data);
-
   let pages: Array<NeynarFramePage> = new Array<NeynarFramePage>();
   for (let i = 0; i < threadLength; i++) {
     const previousPage = i - 1 < 0 ? null : data[i - 1];
     const currentPage = data[i];
     const nextPage = i + 1 >= threadLength ? null : data[i + 1];
 
-    // console.log("Iteration data: ", previousPage, currentPage, nextPage);
     let page;
     if (!previousPage && !nextPage) {
       page = new FramePage({ currentPage: currentPage });
@@ -175,7 +170,6 @@ export const generateFrameCreationRequest = async (
     }
 
     if (page) {
-      // console.log("Page info: ", page);
       const pageTemplate = getOneFrameSettings(page, threadLength);
 
       pages.push(pageTemplate);

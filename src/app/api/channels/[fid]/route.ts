@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import {
-  isAuth,
   nonAuthHttpResponse,
   internalServerErrorHttpResponse,
   apiErrorHttpResponse,
   successHttpResponse,
+  verifyAuth,
 } from "@/utils/helpers";
 import { fetchChannelForFid } from "@/utils/neynar-requests";
 import { isApiErrorResponse } from "@neynar/nodejs-sdk";
@@ -17,13 +17,11 @@ export const GET = async (
 ) => {
   const currentHeaders = headers();
 
-  //   console.log("Stat API headers: ", request.headers);
-
-  if (!isAuth(currentHeaders)) {
+  if (!verifyAuth(currentHeaders)) {
     return nonAuthHttpResponse();
   }
 
-  console.log("I am in api/channels/[fid]");
+  console.log("[DEBUG - api/channels/[fid]] Fetching user's channels...");
   try {
     let userChannels: Array<Channel> =
       (await fetchChannelForFid(params.fid)) || [];

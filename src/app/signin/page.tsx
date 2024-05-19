@@ -6,7 +6,7 @@ import { UserInfo } from "@/types";
 
 export default function MySignIn() {
   const { screen } = useApp();
-  console.log(`[AUTH_WEB] Current state: ${screen}`);
+  console.log(`[DEBUG - signin] Current login app state: ${screen}`);
   const [user, _1, removeUser] = useLocalStorage<UserInfo>("user");
 
   if (user) {

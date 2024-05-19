@@ -4,7 +4,7 @@ import Home from "./Screens/Home";
 
 export default function Index() {
   const { screen } = useApp();
-  console.log(`Current state: ${screen}`);
+  console.log(`[DEBUG - page.tsx] Current login app state: ${screen}`);
 
   if (screen === ScreenState.Home) {
     return <Home />;
