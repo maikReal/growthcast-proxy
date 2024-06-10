@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
   const { fids } = await request.json();
 
   console.log("[DEBUG - api/power-users/ranks] Fetching user's ranks...");
-  console.log(fids);
   try {
     if (!fids) {
       return unprocessableHttpResponse();
@@ -37,13 +36,18 @@ export async function POST(request: NextRequest) {
 
     if (userRanksResponse.ok) {
       const { result } = await userRanksResponse.json();
-      console.log(result);
+      console.log(
+        "[DEBUG - api/power-users/openrank-ranks] Fetching OpenRank user ranks..."
+      );
       return generateApiResponse(userRanksResponse, result);
     } else {
       return generateApiResponse(userRanksResponse);
     }
   } catch (err) {
-    console.log(err);
+    console.error(
+      "[ERROR - api/power-users/openrank-ranks] Error occured: ",
+      err
+    );
     return internalServerErrorHttpResponse(err);
   }
 }

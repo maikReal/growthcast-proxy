@@ -29,6 +29,9 @@ interface RecommendedUserRankProp {
 
 export const getRecommendedUsers = async (fid: number) => {
   //   Fetch users with badges
+  console.log(
+    "[DEBUG - utils/powerUserRecommendations] Fetching all users with a power badge..."
+  );
   const usersWithBadges = (
     await axios.get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/badges`)
   ).data.result.fids as Array<number>;
@@ -36,19 +39,28 @@ export const getRecommendedUsers = async (fid: number) => {
   // console.log("Badges: ", usersWithBadges);
 
   // Fetch recommended users for a specific FID
+  console.log(
+    "[DEBUG - utils/powerUserRecommendations] Fetch recommended users for a specific FID..."
+  );
   const recommendedUsers = (
     await axios.get(
       `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/openrank-recommend/${fid}`
     )
-  ).data as RecommendedUsers;
+  ).data as RecommendedUserProp[];
 
-  // console.log("Recs: ", recommendedUsers);
+  // console.log("Recs recommendedUsers: ", recommendedUsers);
 
-  const getRecommendedUsersFids = getFids(recommendedUsers.message);
+  console.log(
+    "[DEBUG - utils/powerUserRecommendations] Getting recommended users FIDs..."
+  );
+  const getRecommendedUsersFids = getFids(recommendedUsers);
   //
   // console.log("fids: ", getRecommendedUsersFids);
 
   // Get ranks of recommended users
+  console.log(
+    "[DEBUG - utils/powerUserRecommendations] Getting ranks of recommended users by their FIDs..."
+  );
   const recommendedUsersRanks = (
     await axios.post(
       `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/openrank-ranks`,
@@ -56,16 +68,19 @@ export const getRecommendedUsers = async (fid: number) => {
         fids: getRecommendedUsersFids,
       }
     )
-  ).data as RecommendedUsersRanks;
+  ).data as RecommendedUserRankProp[];
 
-  console.log("Ranks+Recs: ", recommendedUsersRanks);
-
+  // console.log("Ranks+Recs: ", recommendedUsersRanks);
+  console.log(
+    "[DEBUG - utils/powerUserRecommendations] Excluding power users by their FIDs..."
+  );
+  // console.log(recommendedUsersRanks);
   const recommendedUsersNoBadge = excludePowerUsers(
-    recommendedUsersRanks.message,
+    recommendedUsersRanks,
     usersWithBadges
   );
 
-  console.log("Recs without badges: ", recommendedUsersNoBadge);
+  // console.log("Recs without badges: ", recommendedUsersNoBadge);
 
   return recommendedUsersNoBadge;
 
@@ -130,7 +145,7 @@ const isIn48TimeFrame = (timestamp: string) => {
 export const filterNonActiveUsers = async (users: Array<ActiveUsersProp>) => {
   const activeUsers = new Array<ActiveUsersProp>();
 
-  console.log(typeof users);
+  // console.log(typeof users);
 
   return users.filter(async (user) => {
     const { result } = await client.fetchAllCastsCreatedByUser(user.fid, {

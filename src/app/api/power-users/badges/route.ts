@@ -18,7 +18,7 @@ export const GET = async (request: NextRequest) => {
   }
 
   console.log(
-    "[DEBUG - api/power-users/] Fetching users with a power badge..."
+    "[DEBUG - api/power-users/badges] Fetching users with a power badge..."
   );
 
   try {
@@ -43,11 +43,14 @@ export const GET = async (request: NextRequest) => {
       })
       .catch((error) => {
         const errorMessage = `Some issues while processing a request: ${error}`;
-        console.log(errorMessage);
+        console.error(
+          `[ERROR - api/power-users/badges] Error occured: ${errorMessage}`
+        );
         return internalServerErrorHttpResponse(errorMessage);
       });
     return powerUsersRequestResponse;
   } catch (error) {
+    console.error(`[ERROR - api/power-users/badges] Error occured: ${error}`);
     return internalServerErrorHttpResponse(error);
   }
 };

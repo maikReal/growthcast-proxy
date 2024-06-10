@@ -46,14 +46,16 @@ export const GET = async (
         "[DEBUG - api/power-users/openrank-recommend/[fid]] Filtering non-active users..."
       );
       const onlyActiveUsers = await filterNonActiveUsers(result);
-      console.log("res", onlyActiveUsers);
-      // return generateApiResponse(userRecommendationsResponse, result);
+
       return generateApiResponse({ status: 200 }, onlyActiveUsers);
     } else {
       return generateApiResponse(userRecommendationsResponse);
     }
   } catch (err) {
-    console.log(err);
+    console.error(
+      "[ERROR - api/power-users/openrank-recommend/[fid]] Error occured: ",
+      err
+    );
     return internalServerErrorHttpResponse(err);
   }
 };
