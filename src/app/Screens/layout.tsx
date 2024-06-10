@@ -1,7 +1,6 @@
 "use client";
 
-import WarpcastLogo from "@/components/icons/Warpcast";
-import Image from "next/image";
+import { WarpDriveLogo } from "@/components/icons/Warpdrive";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -14,10 +13,7 @@ const ScreenLayout = ({ children }: Props) => {
     <div className="flex flex-col min-h-screen text-white">
       <header className="flex justify-center items-center m-10">
         <div className="flex items-center">
-          <WarpcastLogo />
-          {/* <h1 className="text-xl font-medium font-bold ml-3">
-            <i>arpDrive</i>
-          </h1> */}
+          <WarpDriveLogo />
         </div>
       </header>
       {children}

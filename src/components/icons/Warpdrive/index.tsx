@@ -1,4 +1,4 @@
-const WarpcastLogo = () => {
+export const WarpDriveLogo = () => {
   return (
     <svg
       width="112"
@@ -18,5 +18,3 @@ const WarpcastLogo = () => {
     </svg>
   );
 };
-
-export default WarpcastLogo;
