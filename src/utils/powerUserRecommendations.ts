@@ -2,14 +2,6 @@ import client from "@/clients/neynar";
 import axios from "axios";
 import { parseISO, addHours, isBefore } from "date-fns";
 
-interface RecommendedUsers {
-  message: Array<RecommendedUserProp>;
-}
-
-interface RecommendedUsersRanks {
-  message: Array<RecommendedUserRankProp>;
-}
-
 interface RecommendedUserProp {
   address: string;
   fname: string | null;
@@ -36,8 +28,6 @@ export const getRecommendedUsers = async (fid: number) => {
     await axios.get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/badges`)
   ).data.result.fids as Array<number>;
 
-  // console.log("Badges: ", usersWithBadges);
-
   // Fetch recommended users for a specific FID
   console.log(
     "[DEBUG - utils/powerUserRecommendations] Fetch recommended users for a specific FID..."
@@ -48,14 +38,10 @@ export const getRecommendedUsers = async (fid: number) => {
     )
   ).data as RecommendedUserProp[];
 
-  // console.log("Recs recommendedUsers: ", recommendedUsers);
-
   console.log(
     "[DEBUG - utils/powerUserRecommendations] Getting recommended users FIDs..."
   );
   const getRecommendedUsersFids = getFids(recommendedUsers);
-  //
-  // console.log("fids: ", getRecommendedUsersFids);
 
   // Get ranks of recommended users
   console.log(
@@ -70,21 +56,15 @@ export const getRecommendedUsers = async (fid: number) => {
     )
   ).data as RecommendedUserRankProp[];
 
-  // console.log("Ranks+Recs: ", recommendedUsersRanks);
   console.log(
     "[DEBUG - utils/powerUserRecommendations] Excluding power users by their FIDs..."
   );
-  // console.log(recommendedUsersRanks);
   const recommendedUsersNoBadge = excludePowerUsers(
     recommendedUsersRanks,
     usersWithBadges
   );
 
-  // console.log("Recs without badges: ", recommendedUsersNoBadge);
-
   return recommendedUsersNoBadge;
-
-  // Generate the best users to interact with
 };
 
 const getFids = (recommendations: Array<RecommendedUserProp>) => {
@@ -132,48 +112,17 @@ const isIn48TimeFrame = (timestamp: string) => {
   // Add 48 hours to the current date
   const datePlus48Hours = addHours(currentDate, 48);
 
-  // console.log(
-  //   isBefore(parsedDate, datePlus48Hours),
-  //   parsedDate,
-  //   datePlus48Hours
-  // );
-
   return isBefore(parsedDate, datePlus48Hours);
 };
 
 // Filter and leave only users that posted something for the last 48 hours
 export const filterNonActiveUsers = async (users: Array<ActiveUsersProp>) => {
-  const activeUsers = new Array<ActiveUsersProp>();
-
-  // console.log(typeof users);
-
   return users.filter(async (user) => {
     const { result } = await client.fetchAllCastsCreatedByUser(user.fid, {
       limit: 1,
     });
-    // console.log(result);
     if (result.casts.length > 0) {
       return isIn48TimeFrame(result.casts[0].timestamp);
-      // if (isIn48TimeFrame(result.casts[0].timestamp)) {
-      //   activeUsers.push(user);
-      //   console.log(user);
-      // }
     }
   });
-
-  // users.map(async (user) => {
-  //   const { result } = await client.fetchAllCastsCreatedByUser(user.fid, {
-  //     limit: 1,
-  //   });
-  //   // console.log(result);
-  //   if (result.casts.length > 0) {
-  //     if (isIn48TimeFrame(result.casts[0].timestamp)) {
-  //       activeUsers.push(user);
-  //       console.log(user);
-  //     }
-  //   }
-  // });
-
-  // console.log(activeUsers);
-  // return activeUsers;
 };
