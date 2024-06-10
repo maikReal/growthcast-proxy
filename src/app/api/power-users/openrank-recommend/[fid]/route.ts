@@ -7,6 +7,7 @@ import {
   unprocessableHttpResponse,
   generateApiResponse,
 } from "@/utils/helpers";
+import { filterNonActiveUsers } from "@/utils/powerUserRecommendations";
 
 export const GET = async (
   request: NextRequest,
@@ -19,7 +20,7 @@ export const GET = async (
   }
 
   console.log(
-    "[DEBUG - api/power-users/recommend/[fid]] Fetching user's recommended fids..."
+    "[DEBUG - api/power-users/openrank-recommend/[fid]] Fetching user's recommended fids..."
   );
   try {
     if (!params.fid) {
@@ -39,8 +40,15 @@ export const GET = async (
 
     if (userRecommendationsResponse.ok) {
       const { result } = await userRecommendationsResponse.json();
-      console.log(result);
-      return generateApiResponse(userRecommendationsResponse, result);
+      console.log("data:", result);
+
+      console.log(
+        "[DEBUG - api/power-users/openrank-recommend/[fid]] Filtering non-active users..."
+      );
+      const onlyActiveUsers = await filterNonActiveUsers(result);
+      console.log("res", onlyActiveUsers);
+      // return generateApiResponse(userRecommendationsResponse, result);
+      return generateApiResponse({ status: 200 }, onlyActiveUsers);
     } else {
       return generateApiResponse(userRecommendationsResponse);
     }
