@@ -14,7 +14,7 @@ export const GET = async (
   { params }: { params: { fid: number } }
 ) => {
   const currentHeaders = headers();
-
+  console.log("DEBUG - api/db/add-user-stats] Getting data using /api/stat...");
   if (!verifyAuth(currentHeaders)) {
     return nonAuthHttpResponse();
   }
