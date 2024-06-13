@@ -24,6 +24,11 @@ export const GET = async (
 
   let typePeriod = searchParams.get("period") as Period | null;
 
+  console.log(request);
+  console.log(
+    `[DEBUG - api/db/get-stats-by-period] Trying to get info for the following time period: ${typePeriod}`
+  );
+
   if (!typePeriod) {
     return unprocessableHttpResponse();
   }
@@ -55,9 +60,7 @@ export const GET = async (
       console.log(
         `[DEBUG - api/db/get-stats-by-period] The FID ${params.fid} was added to the database`
       );
-    }
-
-    if (isFidExistsInTable) {
+    } else {
       console.log(
         `[DEBUG - api/db/get-stats-by-period] The FID ${params.fid} is in the database. Checking the recent data updates...`
       );

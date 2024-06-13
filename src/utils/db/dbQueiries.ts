@@ -7,6 +7,9 @@ export type Period = "all" | "7days" | "14days" | "30days";
 // Use one of the format: "all" | "7days" | "30days" | "90days" to get ino about a users casts
 export const getFidCasts = async (fid: number, period: Period) => {
   const client = await pool.connect();
+  console.error(
+    "[DEBUG - utils/db/dbQueries] Connection with Database is established. Getting data by fid"
+  );
   try {
     let query = `
       WITH filtered_casts AS (
@@ -125,6 +128,10 @@ export interface UserData {
 
 export const addFidCasts = async (data: UserData) => {
   const client = await pool.connect();
+  console.error(
+    "[DEBUG - utils/db/dbQueries] Connection with Database is established. Inserting data: ",
+    data
+  );
   try {
     const query = `
       INSERT INTO warpdrive ("fid", "totalCasts", "totalLikes", "totalReplies", "totalRecasts", "totalFollowers", "casts")
