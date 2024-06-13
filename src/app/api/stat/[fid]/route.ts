@@ -34,8 +34,6 @@ export const GET = async (
 
     let userCastsStat = await getCastsByFid(params.fid, username);
 
-    console.log(userCastsStat);
-
     userCastsStat.totalFollowers = data.user.followerCount;
 
     return successHttpResponse(userCastsStat);

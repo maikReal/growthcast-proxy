@@ -16,6 +16,7 @@ export const GET = async (
   const currentHeaders = headers();
 
   console.log("DEBUG - api/db/add-user-stats] Request info", request);
+  console.log("DEBUG - api/db/add-user-stats] Request info", currentHeaders);
 
   if (!verifyAuth(currentHeaders)) {
     return nonAuthHttpResponse();

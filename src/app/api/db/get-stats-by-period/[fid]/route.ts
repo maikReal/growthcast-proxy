@@ -45,7 +45,13 @@ export const GET = async (
         `[DEBUG - api/db/get-stats-by-period] The FID ${params.fid} is not in the database. Trying to add it...`
       );
       const isAdded = (await axios.get(
-        `${process.env.NEXT_PUBLIC_DOMAIN}/api/db/add-user-stats/${params.fid}`
+        `${process.env.NEXT_PUBLIC_DOMAIN}/api/db/add-user-stats/${params.fid}`,
+        {
+          headers: {
+            Referer: process.env.NEXT_PUBLIC_DOMAIN,
+            Origin: process.env.NEXT_PUBLIC_DOMAIN,
+          },
+        }
       )) as boolean;
 
       if (!isAdded) {
@@ -73,7 +79,13 @@ export const GET = async (
           `[DEBUG - api/db/get-stats-by-period] The FID ${params.fid} data wasn't updated before. Trying to update data...`
         );
         const wasUpdated = (await axios.get(
-          `${process.env.NEXT_PUBLIC_DOMAIN}/api/db/update-user-stats/${params.fid}`
+          `${process.env.NEXT_PUBLIC_DOMAIN}/api/db/update-user-stats/${params.fid}`,
+          {
+            headers: {
+              Referer: process.env.NEXT_PUBLIC_DOMAIN,
+              Origin: process.env.NEXT_PUBLIC_DOMAIN,
+            },
+          }
         )) as boolean;
 
         if (!wasUpdated) {

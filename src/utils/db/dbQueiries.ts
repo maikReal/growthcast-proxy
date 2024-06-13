@@ -7,7 +7,7 @@ export type Period = "all" | "7days" | "14days" | "30days";
 // Use one of the format: "all" | "7days" | "30days" | "90days" to get ino about a users casts
 export const getFidCasts = async (fid: number, period: Period) => {
   const client = await pool.connect();
-  console.error(
+  console.log(
     "[DEBUG - utils/db/dbQueries] Connection with Database is established. Getting data by fid"
   );
   try {
@@ -96,7 +96,6 @@ export const getFidCasts = async (fid: number, period: Period) => {
       queryParams.push(endDatePrevious.toISOString());
     }
 
-    console.log(queryParams);
     const selectResult = await client.query(query, queryParams);
 
     return selectResult.rows[0];
@@ -128,9 +127,8 @@ export interface UserData {
 
 export const addFidCasts = async (data: UserData) => {
   const client = await pool.connect();
-  console.error(
-    "[DEBUG - utils/db/dbQueries] Connection with Database is established. Inserting data: ",
-    data
+  console.log(
+    "[DEBUG - utils/db/dbQueries] Connection with Database is established. Inserting data..."
   );
   try {
     const query = `

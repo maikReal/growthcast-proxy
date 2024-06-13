@@ -13,9 +13,6 @@ export const processUserCasts = (neynarData: CastsResponse, fname: string) => {
   };
 
   neynarData.result.casts.forEach((element) => {
-    // TODO: Add filter by date
-    // Check if a cast is created by a fid
-
     if (!element.parentAuthor.fid) {
       userCastsStat.totalCasts += 1;
       userCastsStat.totalLikes += element.reactions.count;
