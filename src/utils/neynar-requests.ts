@@ -9,7 +9,9 @@ import { ThreadContent } from "@/types";
 
 // TODO: Understand how 'cursor' param works for neyanr methods. I can use it for pagination
 export const getCastsByFid = async (fid: number, username: string) => {
-  const fidCasts = await client.fetchAllCastsCreatedByUser(fid);
+  const fidCasts = await client.fetchAllCastsCreatedByUser(fid, {
+    limit: 150,
+  });
 
   return processUserCasts(fidCasts, username);
 };

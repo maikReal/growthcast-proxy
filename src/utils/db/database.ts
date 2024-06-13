@@ -22,13 +22,14 @@ const checkAndCreateInitialTable = async () => {
       // Create the table if it does not exist
       const createTableQuery = `
             CREATE TABLE warpdrive (
-              fid NUMERIC,
-              totalCasts NUMERIC,
-              totalLikes NUMERIC,
-              totalReplies NUMERIC,
-              totalRecasts NUMERIC,
-              totalFollowers NUMERIC,
-              casts JSONB
+              "fid" NUMERIC,
+              "totalCasts" NUMERIC,
+              "totalLikes" NUMERIC,
+              "totalReplies" NUMERIC,
+              "totalRecasts" NUMERIC,
+              "totalFollowers" NUMERIC,
+              "casts" JSONB,
+              "lastDateUpd" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
           `;
       await client.query(createTableQuery);
@@ -54,6 +55,6 @@ async function initializeDatabase() {
   await checkAndCreateInitialTable();
 }
 
-initializeDatabase();
+// initializeDatabase();
 
 export { pool };
