@@ -14,11 +14,14 @@ export const GET = async (
   { params }: { params: { fid: number } }
 ) => {
   const currentHeaders = headers();
-  console.log("DEBUG - api/db/add-user-stats] Getting data using /api/stat...");
+
+  console.log("DEBUG - api/db/add-user-stats] Request info", request);
+
   if (!verifyAuth(currentHeaders)) {
     return nonAuthHttpResponse();
   }
 
+  console.log("DEBUG - api/db/add-user-stats] Getting data using /api/stat...");
   try {
     // Get all users casts by his FID
     const { data } = await axios.get(
