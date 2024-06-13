@@ -26,7 +26,13 @@ export const GET = async (
   try {
     // Get all users casts by his FID
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_DOMAIN}/api/stat/${params.fid}`
+      `${process.env.NEXT_PUBLIC_DOMAIN}/api/stat/${params.fid}`,
+      {
+        headers: {
+          Referer: process.env.NEXT_PUBLIC_DOMAIN,
+          Origin: process.env.NEXT_PUBLIC_DOMAIN,
+        },
+      }
     );
 
     console.log("DEBUG - api/db/add-user-stats] Received users stat");

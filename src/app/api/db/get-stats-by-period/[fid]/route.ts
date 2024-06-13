@@ -24,7 +24,6 @@ export const GET = async (
 
   let typePeriod = searchParams.get("period") as Period | null;
 
-  console.log(request);
   console.log(
     `[DEBUG - api/db/get-stats-by-period] Trying to get info for the following time period: ${typePeriod}`
   );
