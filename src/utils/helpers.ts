@@ -15,7 +15,17 @@ export const generateCastLink = (castHash: string, fname: string) => {
 };
 
 export const verifyAuth = (headers: ReadonlyHeaders) => {
-  if (process.env.NEXT_PUBLIC_DEV_MODE) {
+  console.log(
+    "Referer and origin: ",
+    headers.get("origin"),
+    headers.get("referer")
+    // headers
+  );
+  if (
+    process.env.NEXT_PUBLIC_DEV_MODE ||
+    headers.get("origin")?.includes(process.env.NEXT_PUBLIC_DOMAIN!) ||
+    headers.get("referer")?.includes(process.env.NEXT_PUBLIC_DOMAIN!)
+  ) {
     return true;
   }
 
