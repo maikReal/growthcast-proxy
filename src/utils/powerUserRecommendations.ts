@@ -1,16 +1,18 @@
 import client from "@/clients/neynar";
 import axios from "axios";
 import { parseISO, addHours, isBefore } from "date-fns";
+import { getMyFollowers, removeFollowers } from "./helpers";
 
-interface RecommendedUserProp {
+export interface RecommendedUserProp {
   address: string;
   fname: string | null;
   username: string;
   fid: number;
   score: number;
+  profileUrl?: string;
 }
 
-interface RecommendedUserRankProp {
+export interface RecommendedUserRankProp {
   fid: number;
   fname: string;
   username: string | null;
@@ -19,7 +21,10 @@ interface RecommendedUserRankProp {
   percentile: number;
 }
 
-export const getRecommendedUsers = async (fid: number) => {
+export const getRecommendedUsers = async (
+  fid: number,
+  filterType?: string | null
+) => {
   //   Fetch users with badges
   console.log(
     "[DEBUG - utils/powerUserRecommendations] Fetching all users with a power badge..."
@@ -32,76 +37,88 @@ export const getRecommendedUsers = async (fid: number) => {
   console.log(
     "[DEBUG - utils/powerUserRecommendations] Fetch recommended users for a specific FID..."
   );
-  const recommendedUsers = (
+  let recommendedUsers = (
     await axios.get(
       `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/openrank-recommend/${fid}`
     )
   ).data as RecommendedUserProp[];
 
-  console.log(
-    "[DEBUG - utils/powerUserRecommendations] Getting recommended users FIDs..."
-  );
-  const getRecommendedUsersFids = getFids(recommendedUsers);
+  // Remove a fid info from the recommendation
+  recommendedUsers = recommendedUsers.filter((item) => item.fid != fid);
 
-  // Get ranks of recommended users
-  console.log(
-    "[DEBUG - utils/powerUserRecommendations] Getting ranks of recommended users by their FIDs..."
-  );
-  const recommendedUsersRanks = (
-    await axios.post(
-      `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/openrank-ranks`,
-      {
-        fids: getRecommendedUsersFids,
-      }
-    )
-  ).data as RecommendedUserRankProp[];
-
-  console.log(
-    "[DEBUG - utils/powerUserRecommendations] Excluding power users by their FIDs..."
-  );
-  const recommendedUsersNoBadge = excludePowerUsers(
-    recommendedUsersRanks,
-    usersWithBadges
-  );
-
-  return recommendedUsersNoBadge;
+  let filteredUsers = null;
+  if (filterType) {
+    console.log(
+      "[DEBUG - utils/powerUserRecommendations] Applying different filters for the list of recommendations..."
+    );
+    filteredUsers = await applyFilters(
+      recommendedUsers,
+      filterType,
+      usersWithBadges,
+      fid
+    );
+  }
+  return filteredUsers ? filteredUsers : recommendedUsers;
 };
 
-const getFids = (recommendations: Array<RecommendedUserProp>) => {
-  return recommendations.map((value) => {
-    return value.fid;
-  });
+const applyFilters = async (
+  recommendedUsers: RecommendedUserProp[],
+  filterType: string,
+  usersWithBadges: number[],
+  fid: number
+) => {
+  let filterResult = null;
+  if (filterType == "removeMyFollowers" || filterType == "all") {
+    console.log(
+      "[DEBUG - utils/powerUserRecommendations] Remove my followers..."
+    );
+    const fidFollowers = await getMyFollowers(fid);
+    filterResult = removeFollowers(recommendedUsers, fidFollowers);
+  }
+
+  if (filterType == "removePowerUsers" || filterType == "all") {
+    console.log(
+      "[DEBUG - utils/powerUserRecommendations] Excluding power users..."
+    );
+
+    filterResult = excludePowerUsers(
+      filterResult ? filterResult : recommendedUsers,
+      usersWithBadges
+    );
+  }
+
+  if (filterType == "remainActiveUsers" || filterType == "all") {
+    console.log(
+      "[DEBUG - utils/powerUserRecommendations] Filtering non-active users..."
+    );
+    console.log(filterResult ? true : false);
+    filterResult = await filterNonActiveUsers(
+      filterResult ? filterResult : recommendedUsers
+    );
+  }
+
+  return filterResult;
 };
 
 const excludePowerUsers = (
-  recommendedUsersFids: Array<RecommendedUserRankProp>,
+  recommendedUsersFids: Array<RecommendedUserProp>,
   powerUsersFids: Array<number>
 ) => {
-  let filteredFids = new Array<RecommendedUserRankProp>();
+  let filteredFids = new Array<RecommendedUserProp>();
   recommendedUsersFids.map((user) => {
     if (!powerUsersFids.includes(user.fid)) {
       filteredFids.push({
         fid: user.fid,
         fname: user.fname,
         username: user.username,
-        rank: user.rank,
         score: user.score,
-        percentile: user.percentile,
+        address: user.address,
       });
     }
   });
 
   return filteredFids;
 };
-
-interface ActiveUsersProp {
-  fid: number;
-  fname: string | null;
-  username: string | null;
-  rank: number;
-  score: number;
-  percentile: number;
-}
 
 const isIn48TimeFrame = (timestamp: string) => {
   const parsedDate = parseISO(timestamp);
@@ -116,7 +133,9 @@ const isIn48TimeFrame = (timestamp: string) => {
 };
 
 // Filter and leave only users that posted something for the last 48 hours
-export const filterNonActiveUsers = async (users: Array<ActiveUsersProp>) => {
+export const filterNonActiveUsers = async (
+  users: Array<RecommendedUserProp>
+) => {
   return users.filter(async (user) => {
     const { result } = await client.fetchAllCastsCreatedByUser(user.fid, {
       limit: 1,

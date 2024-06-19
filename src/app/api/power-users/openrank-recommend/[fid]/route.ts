@@ -7,7 +7,6 @@ import {
   unprocessableHttpResponse,
   generateApiResponse,
 } from "@/utils/helpers";
-import { filterNonActiveUsers } from "@/utils/powerUserRecommendations";
 
 export const GET = async (
   request: NextRequest,
@@ -28,7 +27,7 @@ export const GET = async (
     }
 
     let userRecommendationsResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_OPENRANK_HOST}/scores/personalized/engagement/fids?limit=90`, //?limit=100
+      `${process.env.NEXT_PUBLIC_OPENRANK_HOST}/scores/personalized/engagement/fids?k=3&limit=300`, // hardcoded limit for recommendations. Could be changed
       {
         method: "POST",
         headers: {
@@ -40,14 +39,9 @@ export const GET = async (
 
     if (userRecommendationsResponse.ok) {
       const { result } = await userRecommendationsResponse.json();
-      console.log("data:", result);
+      console.log("data:", result.slice(0, 5));
 
-      console.log(
-        "[DEBUG - api/power-users/openrank-recommend/[fid]] Filtering non-active users..."
-      );
-      const onlyActiveUsers = await filterNonActiveUsers(result);
-
-      return generateApiResponse({ status: 200 }, onlyActiveUsers);
+      return generateApiResponse({ status: 200 }, result);
     } else {
       return generateApiResponse(userRecommendationsResponse);
     }

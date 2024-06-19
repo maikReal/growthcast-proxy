@@ -1,5 +1,10 @@
+import client from "@/clients/neynar";
 import jwt from "jsonwebtoken";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+import {
+  RecommendedUserProp,
+  RecommendedUserRankProp,
+} from "./powerUserRecommendations";
 
 if (!process.env.NEXT_PUBLIC_ENCRYPTION_KEY) {
   throw new Error("ENCRYPTION_KEY is not defined in .env or .env.development");
@@ -227,4 +232,41 @@ export const generateApiResponse = (
         }
       );
   }
+};
+
+export const getMyFollowers = async (fid: number) => {
+  const neynarBaseURL = `${process.env.NEXT_PUBLIC_NEYNAR_HOST}/v2/farcaster/following`;
+  let cursor = "";
+  let users: { [key: string]: any } = [];
+  do {
+    const urlFollowingQueryParams = `fid=${fid}&limit=100&cursor=${cursor}`;
+    const neynarUsersFollowingURL = `${neynarBaseURL}?${urlFollowingQueryParams}`;
+    const result = await fetch(neynarUsersFollowingURL, {
+      headers: {
+        "Content-Type": "application/json",
+        api_key: `${process.env.NEXT_PUBLIC_NEYNAR_API_KEY}`,
+      },
+    });
+    const resultResponse = await result.json();
+    users = users.concat(resultResponse.users);
+    cursor = resultResponse.next.cursor;
+  } while (cursor !== "" && cursor !== null);
+
+  const filteredUsersFollowing: number[] = users.map(
+    (element: any) => element.user.fid
+  );
+  return filteredUsersFollowing;
+};
+
+export const removeFollowers = (
+  personalizedNetworkRankedArray: RecommendedUserProp[],
+  usersFollowingArray: number[]
+) => {
+  const suggestedFollows = [];
+  for (let i = 0; i < personalizedNetworkRankedArray.length; i++) {
+    if (!usersFollowingArray.includes(personalizedNetworkRankedArray[i].fid)) {
+      suggestedFollows.push(personalizedNetworkRankedArray[i]);
+    }
+  }
+  return suggestedFollows;
 };
