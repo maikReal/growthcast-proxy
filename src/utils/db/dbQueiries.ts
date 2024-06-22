@@ -80,6 +80,10 @@ export const getFidCasts = async (fid: number, period: Period) => {
         break;
       default:
         // Handle the 'all' case if needed
+        startDateCurrent = new Date(2021, 0, 1);
+        endDateCurrent = now;
+        startDatePrevious = new Date(2021, 0, 1);
+        endDatePrevious = now;
         break;
     }
 
