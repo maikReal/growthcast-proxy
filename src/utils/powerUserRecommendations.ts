@@ -30,7 +30,14 @@ export const getRecommendedUsers = async (
     "[DEBUG - utils/powerUserRecommendations] Fetching all users with a power badge..."
   );
   const usersWithBadges = (
-    await axios.get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/badges`)
+    await axios.get(
+      `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/badges`,
+      {
+        headers: {
+          origin: `${process.env.NEXT_PUBLIC_DOMAIN}`,
+        },
+      }
+    )
   ).data.result.fids as Array<number>;
 
   // Fetch recommended users for a specific FID
@@ -39,7 +46,12 @@ export const getRecommendedUsers = async (
   );
   let recommendedUsers = (
     await axios.get(
-      `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/openrank-recommend/${fid}`
+      `${process.env.NEXT_PUBLIC_DOMAIN}/api/power-users/openrank-recommend/${fid}`,
+      {
+        headers: {
+          origin: `${process.env.NEXT_PUBLIC_DOMAIN}`,
+        },
+      }
     )
   ).data as RecommendedUserProp[];
 
