@@ -194,7 +194,7 @@ export const isFidDataUpdated = async (fid: number): Promise<boolean> => {
       return false;
     }
 
-    const lastDateUpd = result.rows[0].lastdateupd as Date;
+    const lastDateUpd = result.rows[0].lastDateUpd as Date;
     const currentTime = new Date();
     const timeDifference =
       (currentTime.getTime() - new Date(lastDateUpd).getTime()) / (1000 * 60); // difference in minutes
