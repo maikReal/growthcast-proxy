@@ -73,7 +73,8 @@ export const GET = async (
       // Check if data for a specific FID was updated at least 30 mins ago
       const isFidUpdated = await isFidDataUpdated(params.fid);
 
-      if (isFidUpdated) {
+      console.log("isFidUpdated: ", isFidUpdated);
+      if (!isFidUpdated) {
         console.log(
           `[DEBUG - api/db/get-stats-by-period] The FID ${params.fid} data wasn't updated before. Trying to update data...`
         );
@@ -81,7 +82,6 @@ export const GET = async (
           `${process.env.NEXT_PUBLIC_DOMAIN}/api/db/update-user-stats/${params.fid}`,
           {
             headers: {
-              Referer: process.env.NEXT_PUBLIC_DOMAIN,
               Origin: process.env.NEXT_PUBLIC_DOMAIN,
             },
           }

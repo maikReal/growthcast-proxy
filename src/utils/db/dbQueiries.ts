@@ -80,6 +80,10 @@ export const getFidCasts = async (fid: number, period: Period) => {
         break;
       default:
         // Handle the 'all' case if needed
+        startDateCurrent = new Date(2021, 0, 1);
+        endDateCurrent = now;
+        startDatePrevious = new Date(2021, 0, 1);
+        endDatePrevious = now;
         break;
     }
 
@@ -190,7 +194,7 @@ export const isFidDataUpdated = async (fid: number): Promise<boolean> => {
       return false;
     }
 
-    const lastDateUpd = result.rows[0].lastdateupd as Date;
+    const lastDateUpd = result.rows[0].lastDateUpd as Date;
     const currentTime = new Date();
     const timeDifference =
       (currentTime.getTime() - new Date(lastDateUpd).getTime()) / (1000 * 60); // difference in minutes
