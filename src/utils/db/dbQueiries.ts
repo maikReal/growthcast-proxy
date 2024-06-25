@@ -246,3 +246,168 @@ export const updateFidData = async (
     client.release();
   }
 };
+
+// WEBHOOK EVENTS
+
+export type HookEvents = "cast.created" | "reaction.created";
+
+// export const getHookEvents = async (
+//   fid: number,
+//   hookEventType: HookEvents
+// ): Promise<boolean> => {
+//   const client = await pool.connect();
+//   try {
+//     if (hookEventType === "cast.created") {
+//       const query = `
+//       SELECT timestamp
+//       FROM warpdrive_streaks
+//       WHERE user_fid = $1
+//       ORDER BY timestamp DESC
+//       LIMIT 1
+//     `;
+
+//       const result = await client.query(query, [fid]);
+
+//       if (result.rows.length === 0) {
+//         return false;
+//       }
+
+//       const latestTimestamp = result.rows[0].timestamp;
+//       const today = new Date();
+//       const eventDate = new Date(latestTimestamp);
+
+//       // Check if the eventDate is today
+//       const isToday =
+//         eventDate.getFullYear() === today.getFullYear() &&
+//         eventDate.getMonth() === today.getMonth() &&
+//         eventDate.getDate() === today.getDate();
+
+//       return isToday;
+//     }
+
+//     return false;
+//   } catch (error) {
+//     console.error("Error querying the database:", error);
+//     throw error;
+//   } finally {
+//     client.release();
+//   }
+// };
+
+export const getNumberOfStreaks = async (fid: number) => {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT timestamp
+      FROM warpdrive_streaks
+      WHERE user_fid = $1
+      ORDER BY timestamp DESC
+    `;
+
+    const result = await client.query(query, [fid]);
+
+    if (result.rows.length === 0) {
+      return 0;
+    }
+
+    const today = new Date();
+    let count = 0;
+
+    for (let i = 0; i < result.rows.length; i++) {
+      const rowDate = new Date(result.rows[i].timestamp);
+
+      // Calculate the difference in days between today and the row date
+      const diffInDays = Math.floor(
+        (today.getTime() - rowDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (diffInDays === count) {
+        count++;
+      } else {
+        break;
+      }
+    }
+
+    return count;
+  } catch (error) {
+    console.error("Error querying the database:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const getCurrentWebhookUserFids = async () => {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT DISTINCT user_fid
+      FROM warpdrive_webhook_subscribers;
+    `;
+
+    const result = await client.query(query);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return result.rows.map((user) => user.user_fid);
+  } catch (error) {
+    console.error("Error querying the database:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const isFidTracked = async (fid: number) => {
+  const client = await pool.connect();
+
+  try {
+    const query = `
+      SELECT COUNT(*)
+      FROM warpdrive_webhook_subscribers
+      WHERE user_fid = $1;
+    `;
+
+    const result = await client.query(query, [fid]);
+
+    if (result.rows.length === 0) {
+      return false;
+    }
+
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error("Error querying the database:", error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const addSubscriberToDatabase = async (fid: number) => {
+  const client = await pool.connect();
+  console.log(
+    "[DEBUG - utils/db/dbQueries] Connection with Database is established. Inserting data..."
+  );
+  try {
+    const query = `
+      INSERT INTO warpdrive_webhook_subscribers ("user_fid")
+      VALUES ($1)
+    `;
+
+    const values = [fid];
+    await client.query(query, values);
+    console.log(
+      "[DEBUG - utils/db/dbQueries] Subscriber is added successfully"
+    );
+    return true;
+  } catch (error) {
+    console.error("[ERROR - utils/db/dbQueries] Error inserting data:", error);
+    return false;
+  } finally {
+    client.release();
+  }
+};

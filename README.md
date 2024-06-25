@@ -45,3 +45,9 @@ CREATE TABLE public."warpdrive-db" (
 fid numeric NOT NULL,
 casts json NULL
 );
+
+CREATE TABLE warpdrive_webhook_subscribers (
+id SERIAL PRIMARY KEY,
+"user_fid" INTEGER NOT NULL,
+"date_added" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
