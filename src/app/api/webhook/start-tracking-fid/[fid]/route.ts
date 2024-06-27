@@ -76,6 +76,19 @@ export const GET = async (
         );
 
         if (updateRequestResponse.ok) {
+          let isCastedToday = await axios.get(
+            `${process.env.NEXT_PUBLIC_DOMAIN}/api/webhook/is-casted-today/${params.fid}`,
+            {
+              headers: {
+                Origin: process.env.NEXT_PUBLIC_DOMAIN,
+              },
+            }
+          );
+
+          console.log(
+            `[DEBUG - api/webhook/start-tracking-fid/[fid]] The FID ${params.fid} is casted today? -> ${isCastedToday.data}...`
+          );
+
           return generateApiResponse({ status: 200 }, true);
         } else {
           return generateApiResponse({ status: 502 });

@@ -30,7 +30,7 @@ export const GET = async (
     );
     const streaksNumber = await getNumberOfStreaks(params.fid);
 
-    return generateApiResponse({ status: 200 }, { streaks: streaksNumber });
+    return generateApiResponse({ status: 200 }, streaksNumber);
   } catch (error) {
     console.error(error);
     return internalServerErrorHttpResponse(error);
