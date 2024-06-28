@@ -12,7 +12,7 @@ const Home = () => {
         {displayName && pfp ? (
           <>
             <p className="text-3xl">
-              Welcome to WarpDrive{" "}
+              Welcome to Growthcast{" "}
               {displayName && (
                 <span className="font-medium">{displayName}</span>
               )}
