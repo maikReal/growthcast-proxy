@@ -5,11 +5,14 @@ import useLocalStorage from "@/hooks/use-local-storage-state";
 import { ScreenState } from "@/Context/AppContext";
 
 import SignInButton from "@/components/SignInButton";
+import { Loader } from "@/components/loader";
 
 const Signin = () => {
   const { screen, setScreen } = useApp();
   const [user, setUser, removeUser] = useLocalStorage("user");
   const [isClient, setIsClient] = useState(false);
+  const [isSignInBtnClicked, setIsSignInBtnClicked] = useState(false);
+  const [isConnectedWarpcast, setIsConnectedWarpcast] = useState(false);
 
   const publicDomain = process.env.NEXT_PUBLIC_DOMAIN;
 
@@ -61,6 +64,8 @@ const Signin = () => {
       //   fid: data.fid,
       // });
 
+      setIsConnectedWarpcast(true);
+
       localStorage.setItem(
         "user",
         JSON.stringify({
@@ -95,7 +100,15 @@ const Signin = () => {
   }, []);
 
   const getButton = useCallback(() => {
-    return <SignInButton />;
+    const handleClick = () => {
+      setIsSignInBtnClicked(true);
+    };
+
+    return (
+      <button style={{ background: "transparent" }} onClick={handleClick}>
+        <SignInButton />
+      </button>
+    );
   }, []);
 
   return (
@@ -103,9 +116,13 @@ const Signin = () => {
       <main className="flex-grow flex flex-col items-center justify-center">
         <div className="mx-5 flex flex-col items-center justify-center">
           <h2 className="text-4xl font-extralight mb-4">
-            {isClient && "Connect your Warpcast account"}
+            {isSignInBtnClicked
+              ? isConnectedWarpcast
+                ? "Linking your Warpcast account with Growthcast"
+                : "Login to your Warpcast account on the new tab"
+              : isClient && "Connect your Warpcast account"}
           </h2>
-          {getButton()}
+          {isSignInBtnClicked ? <Loader /> : getButton()}
         </div>
       </main>
     </ScreenLayout>

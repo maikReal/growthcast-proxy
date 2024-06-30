@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const { hash } = await neynarClient.publishCast(
       signerUuid,
-      "Here is my thread powered by @warpdrive 👇",
+      "Here is my thread powered by @growthcast 👇",
       {
         embeds: embeds,
         channelId: channelId,

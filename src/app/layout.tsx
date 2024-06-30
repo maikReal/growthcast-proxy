@@ -8,8 +8,8 @@ import { ToastContainer } from "react-toastify";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "WarpDrive",
-  description: "An anlytical tool to boost engagement and activity on Warpcast",
+  title: "Growthcast",
+  description: "Grow faster on Farcaster",
 };
 
 export default function RootLayout({
