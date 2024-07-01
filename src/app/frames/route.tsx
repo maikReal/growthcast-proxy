@@ -124,7 +124,7 @@ const handleRequest = async (
         <Button
           action="link"
           target={`https://warpcast.com/~/compose?${new URLSearchParams({
-            text: `Simple text`,
+            text: `send it higher ↑\n\nhow high is your cast streak?`,
             "embeds[]": `${process.env.NEXT_PUBLIC_DOMAIN}/frames/streaks/${fid}`,
           }).toString()}`}
         >

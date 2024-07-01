@@ -30,7 +30,7 @@ export const StreaksFrameImage = ({
       >
         {isEmptyState
           ? "Oops, username is not found"
-          : (username ? `@${username}` : "Anon") + " cast streaks"}
+          : (username ? `@${username}` : "Anon") + " cast streak"}
       </span>
       <div
         style={{

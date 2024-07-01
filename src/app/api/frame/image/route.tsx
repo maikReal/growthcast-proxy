@@ -5,11 +5,11 @@ import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import { StreaksFrameImage } from "@/components/Frame/streaks";
 
-const fontPath = join(process.cwd(), "public/Satoshi-Regular.ttf");
+const fontPath = join(process.cwd(), "public/Inter-Regular.ttf");
 let fontData = fs.readFileSync(fontPath);
 
-const boldFontPath = join(process.cwd(), "public/Satoshi-Bold.ttf");
-let boldFontData = fs.readFileSync(boldFontPath);
+const semiBoldFontPath = join(process.cwd(), "public/Inter-SemiBold.ttf");
+let semiBoldFontData = fs.readFileSync(semiBoldFontPath);
 
 export const GET = async (req: NextRequest, res: NextResponse) => {
   const getSvgImage = (
@@ -19,13 +19,10 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
   ) => {
     return satori(
       <div
-        // className={styles.frameContainer}
         style={{
           display: "flex",
           width: "100%",
           height: "540px",
-          // overflow: "visible",
-          // background: "#3D335D",
         }}
       >
         <div
@@ -34,7 +31,6 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             alignItems: "center",
             flexDirection: "column",
             display: "flex",
-            // background: "#222529",
             backgroundImage: `url(${process.env.NEXT_PUBLIC_DOMAIN}/frame-bg.png)`,
             backgroundSize: "cover", // Ensures the image covers the whole div
             backgroundPosition: "center",
@@ -56,15 +52,15 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
         fonts: [
           {
             data: fontData,
-            name: "Satoshi",
+            name: "Inter",
             style: "normal",
             weight: 400,
           },
           {
-            data: boldFontData,
-            name: "Satoshi",
+            data: semiBoldFontData,
+            name: "Inter",
             style: "normal",
-            weight: 900,
+            weight: 600,
           },
         ],
       }
