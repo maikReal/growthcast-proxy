@@ -46,8 +46,6 @@ export const GET = async (
 
     let recentUserCast = data.casts ? data.casts[0] : null;
 
-    console.log(recentUserCast);
-
     if (recentUserCast) {
       recentUserCast = recentUserCast as MyCasts;
 

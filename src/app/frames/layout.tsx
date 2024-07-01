@@ -5,8 +5,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${process.env.NEXT_PUBLIC_DOMAIN}`),
-  title: "Warpdrive - Warpcast profile stats Frame",
-  description: "Warpdrive - Warpcast profile stats Frame",
+  title: "Growthcast - Warpcast profile stats Frame",
+  description: "Growthcast - Warpcast profile stats Frame",
 };
 
 export default function RootLayout({

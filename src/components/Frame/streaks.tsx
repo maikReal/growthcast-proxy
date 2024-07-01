@@ -1,6 +1,13 @@
-import { ReactNode } from "react";
-
-export const StreaksFrameImage = () => {
+export const StreaksFrameImage = ({
+  username,
+  streaks,
+  isEmptyState,
+}: {
+  username: string;
+  streaks: string;
+  isEmptyState: boolean;
+}) => {
+  console.log("Streaks?", streaks, typeof streaks);
   return (
     <div
       style={{
@@ -21,7 +28,9 @@ export const StreaksFrameImage = () => {
           fontSize: "60px",
         }}
       >
-        @handle Cast Streak
+        {isEmptyState
+          ? "Oops, username is not found"
+          : (username ? `@${username}` : "Anon") + " cast streaks"}
       </span>
       <div
         style={{
@@ -31,37 +40,40 @@ export const StreaksFrameImage = () => {
           columnGap: "25px",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "80px",
-            height: "80px",
-            borderRadius: "50%",
-            backgroundColor: "#FFFFFF",
-            color: "white",
-            fontSize: "16px",
-            fontWeight: "bold",
-            border: "4px solid #E67975",
-          }}
-        >
+        {isEmptyState ? null : (
           <div
             style={{
               display: "flex",
-              padding: "30px",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              backgroundColor: "#FFFFFF",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "bold",
+              border: "4px solid #E67975",
             }}
           >
-            <span
+            <div
               style={{
-                color: "#E67975",
-                fontSize: "40px",
+                display: "flex",
+                padding: "30px",
               }}
             >
-              7
-            </span>
+              <span
+                style={{
+                  color: "#E67975",
+                  fontSize: "40px",
+                }}
+              >
+                {streaks}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
+
         <div
           style={{
             display: "flex",
@@ -69,38 +81,28 @@ export const StreaksFrameImage = () => {
             width: "100%",
           }}
         >
-          <span
-            style={{
-              fontSize: "40px",
-              fontWeight: "600",
-            }}
-          >
-            7 week streak!
-          </span>
+          {isEmptyState ? null : (
+            <span
+              style={{
+                fontSize: "40px",
+                fontWeight: "600",
+              }}
+            >
+              {streaks} week streak!
+            </span>
+          )}
           <span
             style={{
               fontSize: "35px",
               fontWeight: "400",
             }}
           >
-            I’m on a roll. Cast daily to grow faster!
+            {isEmptyState
+              ? "Seems the url is wrong..."
+              : "I’m on a roll. Cast daily to grow faster!"}
           </span>
         </div>
       </div>
     </div>
-  );
-};
-
-const FrameImageTitle = ({ children }: { children: ReactNode }) => {
-  return (
-    <span
-      style={{
-        fontFamily: "Inter",
-        fontWeight: "600",
-        fontSize: "60px",
-      }}
-    >
-      {children}
-    </span>
   );
 };

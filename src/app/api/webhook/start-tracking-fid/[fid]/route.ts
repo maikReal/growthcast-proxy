@@ -76,8 +76,17 @@ export const GET = async (
         );
 
         if (updateRequestResponse.ok) {
-          let isCastedToday = await axios.get(
-            `${process.env.NEXT_PUBLIC_DOMAIN}/api/webhook/is-casted-today/${params.fid}`,
+          // let isCastedToday = await axios.get(
+          //   `${process.env.NEXT_PUBLIC_DOMAIN}/api/webhook/is-casted-today/${params.fid}`,
+          //   {
+          //     headers: {
+          //       Origin: process.env.NEXT_PUBLIC_DOMAIN,
+          //     },
+          //   }
+          // );
+
+          let isCastedPreviously = await axios.get(
+            `${process.env.NEXT_PUBLIC_DOMAIN}/api/webhook/is-casted-previously/${params.fid}`,
             {
               headers: {
                 Origin: process.env.NEXT_PUBLIC_DOMAIN,
@@ -86,7 +95,7 @@ export const GET = async (
           );
 
           console.log(
-            `[DEBUG - api/webhook/start-tracking-fid/[fid]] The FID ${params.fid} is casted today? -> ${isCastedToday.data}...`
+            `[DEBUG - api/webhook/start-tracking-fid/[fid]] The FID ${params.fid} is casted previously? -> ${isCastedPreviously}...`
           );
 
           return generateApiResponse({ status: 200 }, true);
