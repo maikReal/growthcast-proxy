@@ -26,7 +26,7 @@ export const GET = async (
 
   try {
     console.log(
-      "[DEBUG - api/webhook/is-casted-today/[fid]] Getting info about the casts of a user for past weeks..."
+      "[DEBUG - api/webhook/is-casted-previously/[fid]] Getting info about the casts of a user for past weeks..."
     );
 
     const { data } = await axios.get(

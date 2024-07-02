@@ -66,15 +66,21 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
       }
     );
   };
-  console.log(req.url);
+
   if (req.method == "GET") {
     const { searchParams } = new URL(req.url);
     const username = searchParams.get("username") || "";
     const streaks = searchParams.get("streaks") || "";
     let state = searchParams.get("state") || "";
 
-    console.log("Current username: ", username);
-    console.log("Current username streaks: ", streaks);
+    console.log(
+      "[DEBUG - api/frame/image/route.tsx] Current username: ",
+      username
+    );
+    console.log(
+      "[DEBUG - api/frame/image/route.tsx] Current username streaks: ",
+      streaks
+    );
 
     if (state === "empty") {
       const svgImg = await getSvgImage(username, streaks, true);

@@ -7,10 +7,7 @@ import {
   generateApiResponse,
 } from "@/utils/helpers";
 import axios from "axios";
-import {
-  addRecentCastToStreaksTable,
-  getNumberOfStreaks,
-} from "@/utils/db/dbQueiries";
+import { addRecentCastToStreaksTable } from "@/utils/db/dbQueiries";
 import { MyCasts } from "@/types";
 
 export const GET = async (

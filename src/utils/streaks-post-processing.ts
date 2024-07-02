@@ -11,21 +11,27 @@ export const getMaxPreviousConsecutiveWeeksForFid = (
   console.log("Length: ", casts.length);
   if (casts.length === 0) return { consecutiveWeeks: 0, consideredCasts: [] };
 
-  // Сортируем посты по убыванию даты
+  // Sorting casts
   casts.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
   const currentDate = new Date();
   currentDate.setUTCHours(0, 0, 0, 0);
-  // Устанавливаем дату на начало текущей недели (понедельник)
+  // Set the date of the week start (Monday)
   currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1);
 
-  console.log("Current date:", currentDate);
+  console.log(
+    "[DEBUG - utils/streaks-post-processing.ts] Current date:",
+    currentDate
+  );
 
-  const oneWeek = 7 * 24 * 60 * 60 * 1000; // Миллисекунды в неделе
+  const oneWeek = 7 * 24 * 60 * 60 * 1000; // Miliseconds per week
   let weekEnd = new Date(currentDate.getTime());
-  console.log("Week start: ", weekEnd);
+  console.log(
+    "[DEBUG - utils/streaks-post-processing.ts] Week start: ",
+    weekEnd
+  );
   let consecutiveWeeks = 0;
   let maxConsecutiveWeeks = 0;
   let postIndex = 0;
@@ -56,14 +62,16 @@ export const getMaxPreviousConsecutiveWeeksForFid = (
       consecutiveWeeks++;
       maxConsecutiveWeeks = Math.max(maxConsecutiveWeeks, consecutiveWeeks);
     } else {
-      break; // Прерываем цикл при первой неделе без постов
+      break; // Break the loop if we found a week without any casts
     }
 
     weekEnd = weekStart;
   }
 
-  console.log("Res: ", maxConsecutiveWeeks);
-  console.log("Included casts: ", castsStreaks);
+  console.log(
+    "[DEBUG - utils/streaks-post-processing.ts] Total consecutive weeks: ",
+    maxConsecutiveWeeks
+  );
 
   return {
     consecutiveWeeks: maxConsecutiveWeeks,

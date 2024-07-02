@@ -3,15 +3,9 @@ import { headers } from "next/headers";
 import {
   nonAuthHttpResponse,
   internalServerErrorHttpResponse,
-  apiErrorHttpResponse,
-  successHttpResponse,
   verifyAuth,
   generateApiResponse,
 } from "@/utils/helpers";
-import { getCastsByFid } from "@/utils/neynar-requests";
-import axios from "axios";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v1";
-import { isApiErrorResponse } from "@neynar/nodejs-sdk";
 import { getNumberOfStreaks } from "@/utils/db/dbQueiries";
 
 export const GET = async (

@@ -368,7 +368,7 @@ export const getNumberOfStreaks = async (fid: number) => {
 
     return consecutiveWeeks;
 
-    // THE FUNCTION TO GET CONSECUTIVE DAYS FOR A SPECIFIC FID
+    // ->>> THE FUNCTION TO GET CONSECUTIVE DAYS FOR A SPECIFIC FID <<<-
     // const currentDate = new Date().toISOString().split("T")[0];
 
     // const dateList = result.rows.map((ts) => new Date(ts.timestamp));

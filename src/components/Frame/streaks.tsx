@@ -7,7 +7,6 @@ export const StreaksFrameImage = ({
   streaks: string;
   isEmptyState: boolean;
 }) => {
-  console.log("Streaks?", streaks, typeof streaks);
   return (
     <div
       style={{

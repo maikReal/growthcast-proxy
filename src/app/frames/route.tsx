@@ -29,24 +29,11 @@ const calcualteStreaks = async (fid: string) => {
   return data;
 };
 
-const calcualtePreviousStreaks = async (fid: string) => {
-  let { data } = await axios.get(
-    `${process.env.NEXT_PUBLIC_DOMAIN}/api/webhook/is-casted-previously/${fid}`,
-    {
-      headers: {
-        Origin: process.env.NEXT_PUBLIC_DOMAIN,
-      },
-    }
-  );
-
-  return data;
-};
-
 const handleRequest = async (
   req: NextRequest,
   { params: urlParams }: { params: any }
 ) => {
-  console.log("params:", urlParams);
+  console.log("[DEBUG - frames/route.tsx] User URL params:", urlParams);
   return await frames(async (ctx) => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
 
@@ -69,18 +56,21 @@ const handleRequest = async (
       fid = message?.requesterFid;
     }
 
-    console.log("FID: ", fid);
+    console.log("[DEBUG - frames/route.tsx] User FID: ", fid);
     if (fid) {
       try {
         await startTrackUser(fid);
 
         streaks = await calcualteStreaks(fid);
 
-        console.log("User streaks: ", streaks);
+        console.log("[DEBUG - frames/route.tsx] User streaks: ", streaks);
 
         isEmptyState = "non-empty";
       } catch (error) {
-        console.error("Error during the fetching info about fid casts", error);
+        console.error(
+          "[ERROR - frames/route.tsx] Error during the fetching info about fid casts",
+          error
+        );
         isEmptyState = "empty";
 
         return {
@@ -111,7 +101,6 @@ const handleRequest = async (
       };
     }
 
-    // console.log("user msg:", message);
     return {
       image: `${baseUrl}/api/frame/image?state=${isEmptyState}&username=${username}&streaks=${streaks}`,
       buttons: [
@@ -137,15 +126,3 @@ const handleRequest = async (
 
 export const GET = handleRequest;
 export const POST = handleRequest;
-
-// message ? (
-//   <div style={{ display: "flex", flexDirection: "column" }}>
-//     GM, {message.requesterUserData?.displayName || "anonymous"}! Your FID is{" "}
-//     {message.requesterFid},{" "}
-//     {message.requesterFid < 20000
-//       ? "you're OG!"
-//       : "welcome to the Farcaster!"}
-//   </div>
-// ) : (
-//   <div>Say GM</div>
-// )
