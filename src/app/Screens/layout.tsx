@@ -17,12 +17,6 @@ const ScreenLayout = ({ children }: Props) => {
         </div>
       </header>
       {children}
-      {/* <footer className="flex flex-col justify-center items-center gap-y-6 text-center p-4">
-        The best tool to imrpove your Warpcast account
-        <Link href="https://warpcast.com/growthcast" target="_blank">
-          Follow us on <span className="font-bold">Warpcast</span>
-        </Link>
-      </footer> */}
     </div>
   );
 };
