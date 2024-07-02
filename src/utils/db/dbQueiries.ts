@@ -281,6 +281,44 @@ export const addRecentCastToStreaksTable = async (recentCast: {
   }
 };
 
+export const addMultiplePreviousStreaks = async (
+  recentCasts: {
+    user_fid: number;
+    timestamp: string;
+    hash: string;
+  }[]
+): Promise<boolean> => {
+  const client = await pool.connect();
+  try {
+    const query = `
+      INSERT INTO warpdrive_streaks ("user_fid", "timestamp", "hash")
+      VALUES ${recentCasts
+        .map(
+          (_, index) =>
+            `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3})`
+        )
+        .join(", ")}
+    `;
+
+    const values = recentCasts.flatMap((cast) => [
+      cast.user_fid,
+      new Date(cast.timestamp),
+      cast.hash,
+    ]);
+
+    await client.query(query, values);
+    console.log(
+      "[DEBUG - utils/db/dbQueries] Recent user casts added to warpdrive_streak table"
+    );
+    return true;
+  } catch (error) {
+    console.error("[ERROR - utils/db/dbQueries] Error inserting data:", error);
+    return false;
+  } finally {
+    client.release();
+  }
+};
+
 export const getNumberOfStreaks = async (fid: number) => {
   const client = await pool.connect();
 
@@ -298,38 +336,71 @@ export const getNumberOfStreaks = async (fid: number) => {
       return 0;
     }
 
-    const currentDate = new Date().toISOString().split("T")[0];
+    const currentDate = new Date();
 
-    const dateList = result.rows.map((ts) => new Date(ts.timestamp));
+    const getRelativeWeekNumber = (date: Date): number => {
+      const diffTime = currentDate.getTime() - date.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return Math.floor(diffDays / 7);
+    };
 
-    // Extract just the dates (YYYY-MM-DD) to compare days
-    const uniqueDays = new Set(
-      dateList.map((date) => date.toISOString().split("T")[0])
-    );
+    // Set of rows for when there was a record for a specific fid
+    const weeksSet = new Set<number>();
 
-    // Sort the dates to ensure chronological order
-    const sortedDays = Array.from(uniqueDays).sort(
-      (a, b) => new Date(b).getTime() - new Date(a).getTime()
-    );
+    for (const row of result.rows) {
+      const recordDate = new Date(row.timestamp);
+      const weekNumber = getRelativeWeekNumber(recordDate);
+      weeksSet.add(weekNumber);
+    }
 
-    let consecutiveDaysCount = 0;
-    let checkingDate = new Date(currentDate);
+    // Ascending sorting
+    const weeksArray = Array.from(weeksSet).sort((a, b) => a - b);
 
-    for (let i = 0; i < sortedDays.length; i++) {
-      const currentDay = new Date(sortedDays[i]);
-      const differenceInDays = Math.floor(
-        (checkingDate.getTime() - currentDay.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      if (differenceInDays === 0) {
-        consecutiveDaysCount++;
-        checkingDate.setDate(checkingDate.getDate() - 1);
+    // Calculating consecutive weeks
+    let consecutiveWeeks = 1;
+    for (let i = 1; i < weeksArray.length; i++) {
+      if (weeksArray[i] === weeksArray[i - 1] + 1) {
+        consecutiveWeeks++;
       } else {
         break;
       }
     }
 
-    return consecutiveDaysCount;
+    return consecutiveWeeks;
+
+    // ->>> THE FUNCTION TO GET CONSECUTIVE DAYS FOR A SPECIFIC FID <<<-
+    // const currentDate = new Date().toISOString().split("T")[0];
+
+    // const dateList = result.rows.map((ts) => new Date(ts.timestamp));
+
+    // // Extract just the dates (YYYY-MM-DD) to compare days
+    // const uniqueDays = new Set(
+    //   dateList.map((date) => date.toISOString().split("T")[0])
+    // );
+
+    // // Sort the dates to ensure chronological order
+    // const sortedDays = Array.from(uniqueDays).sort(
+    //   (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    // );
+
+    // let consecutiveDaysCount = 0;
+    // let checkingDate = new Date(currentDate);
+
+    // for (let i = 0; i < sortedDays.length; i++) {
+    //   const currentDay = new Date(sortedDays[i]);
+    //   const differenceInDays = Math.floor(
+    //     (checkingDate.getTime() - currentDay.getTime()) / (1000 * 60 * 60 * 24)
+    //   );
+
+    //   if (differenceInDays === 0) {
+    //     consecutiveDaysCount++;
+    //     checkingDate.setDate(checkingDate.getDate() - 1);
+    //   } else {
+    //     break;
+    //   }
+    // }
+
+    // return consecutiveDaysCount;
   } catch (error) {
     console.error("Error querying the database:", error);
     throw error;

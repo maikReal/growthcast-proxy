@@ -1,17 +1,10 @@
-import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import {
   nonAuthHttpResponse,
   internalServerErrorHttpResponse,
-  apiErrorHttpResponse,
-  successHttpResponse,
   verifyAuth,
   generateApiResponse,
 } from "@/utils/helpers";
-import { getCastsByFid } from "@/utils/neynar-requests";
-import axios from "axios";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v1";
-import { isApiErrorResponse } from "@neynar/nodejs-sdk";
 import { getCurrentWebhookUserFids } from "@/utils/db/dbQueiries";
 
 export const GET = async () => {
@@ -23,7 +16,7 @@ export const GET = async () => {
 
   try {
     console.log(
-      "[DEBUG - api/webhook/is-casted-today/[fid]] Getting info about the recent casts..."
+      "[DEBUG - api/webhook/get-current-subscribers/[fid]] Getting the list of webhook subscribers..."
     );
     const currentSubscribersList = await getCurrentWebhookUserFids();
 

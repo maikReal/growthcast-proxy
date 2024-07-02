@@ -7,10 +7,7 @@ import {
   generateApiResponse,
 } from "@/utils/helpers";
 import axios from "axios";
-import {
-  addRecentCastToStreaksTable,
-  getNumberOfStreaks,
-} from "@/utils/db/dbQueiries";
+import { addRecentCastToStreaksTable } from "@/utils/db/dbQueiries";
 import { MyCasts } from "@/types";
 
 export const GET = async (
@@ -45,8 +42,6 @@ export const GET = async (
     );
 
     let recentUserCast = data.casts ? data.casts[0] : null;
-
-    console.log(recentUserCast);
 
     if (recentUserCast) {
       recentUserCast = recentUserCast as MyCasts;
