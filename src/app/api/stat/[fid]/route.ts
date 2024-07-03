@@ -32,7 +32,9 @@ export const GET = async (
     const username = data.user.username;
     console.log("[DEBUG - api/stat/[fid]] Received user's username:", username);
 
+    console.time("getCastsByFid");
     let userCastsStat = await getCastsByFid(params.fid, username);
+    console.timeEnd("getCastsByFid");
 
     userCastsStat.totalFollowers = data.user.followerCount;
 

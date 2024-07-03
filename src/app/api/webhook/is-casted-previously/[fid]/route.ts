@@ -30,7 +30,7 @@ export const GET = async (
     );
 
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_DOMAIN}/api/stat/${params.fid}`,
+      `${process.env.NEXT_PUBLIC_DOMAIN}/api/db/get-stats-by-period/${params.fid}?period=all`,
       {
         headers: {
           Origin: process.env.NEXT_PUBLIC_DOMAIN,
@@ -38,13 +38,13 @@ export const GET = async (
       }
     );
 
-    let previousUserCasts = data.casts ? data.casts : null;
+    let previousUserCasts = data.currentCasts ? data.currentCasts : null;
 
     if (previousUserCasts) {
       previousUserCasts = previousUserCasts as MyCasts;
 
       const previousConsecutiveCasts: PreviousConsecutiveCastsProps =
-        getMaxPreviousConsecutiveWeeksForFid(data.casts);
+        getMaxPreviousConsecutiveWeeksForFid(previousUserCasts);
 
       await addMultiplePreviousStreaks(
         previousConsecutiveCasts.consideredCasts.map((cast, _) => ({

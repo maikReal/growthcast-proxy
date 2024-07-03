@@ -6,14 +6,35 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { fid: string } }
 ) {
+  // Backward compitability
+  // To support the return format of the lookupUserByFid function
+  const supportOldFormat = (userData: {
+    [key: string]: any;
+  }): { [key: string]: any } => {
+    userData["followerCount"] = userData["follower_count"];
+    userData["followingCount"] = userData["following_count"];
+    userData["pfp"] = { url: userData["pfp_url"] };
+    userData["displayName"] = userData["display_name"];
+
+    delete userData["follower_count"];
+    delete userData["following_count"];
+    delete userData["pfp_url"];
+    delete userData["display_name"];
+
+    return userData;
+  };
   try {
     const fid = parseInt(params.fid);
 
-    // TODO: Remove deprecated method
-    const {
-      result: { user },
-    } = await neynarClient.lookupUserByFid(fid);
-    return NextResponse.json({ user }, { status: 200 });
+    const { users } = await neynarClient.fetchBulkUsers([fid]);
+
+    let userData = users ? users[0] : {};
+
+    if (userData) {
+      userData = supportOldFormat(userData);
+    }
+
+    return NextResponse.json({ user: userData }, { status: 200 });
   } catch (err) {
     console.error("ERROR: /api/user/[fid]", err);
     if (isApiErrorResponse(err)) {
