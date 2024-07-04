@@ -18,6 +18,7 @@
     "form-data": "^4.0.0",
     "frames.js": "^0.17.1",
     "fs": "^0.0.1-security",
+    "gifencoder": "^2.0.1",
     "glob": "^10.3.12",
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.27.3",
@@ -34,7 +35,8 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.266",
-    "@types/node": "^20",
+    "@types/gifencoder": "^2.0.3",
+    "@types/node": "^20.14.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^9.0.8",

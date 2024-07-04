@@ -39,11 +39,14 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             padding: "40px 40px",
           }}
         >
-          <StreaksFrameImage
+          <img
+            src={`${process.env.NEXT_PUBLIC_DOMAIN}/api/frame/animated-image`}
+          />
+          {/* <StreaksFrameImage
             username={username}
             streaks={streaks}
             isEmptyState={isEmptyState}
-          />
+          /> */}
         </div>
       </div>,
       {

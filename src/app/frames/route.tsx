@@ -37,6 +37,48 @@ const handleRequest = async (
   return await frames(async (ctx) => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
 
+    return {
+      image: (
+        <div
+          style={{
+            width: "1020px",
+            height: "540px",
+            backgroundColor: "black",
+            position: "relative",
+            display: "flex",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              color: "white",
+              fontSize: "30px",
+              display: "flex",
+            }}
+          >
+            loading your streaks...
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              display: "flex",
+            }}
+          >
+            <img
+              src={`http://localhost:3000/api/frame/animated-image`}
+              alt="Animated Loader"
+            />
+          </div>
+        </div>
+      ),
+      buttons: [],
+    };
     const message = ctx.message;
 
     let fid = null;

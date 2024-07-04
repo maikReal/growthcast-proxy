@@ -199,7 +199,7 @@ export const isFidDataUpdated = async (fid: number): Promise<boolean> => {
     const timeDifference =
       (currentTime.getTime() - new Date(lastDateUpd).getTime()) / (1000 * 60); // difference in minutes
 
-    return timeDifference < 30;
+    return timeDifference < 60; // check if data was fetched more than 60 mins or not
   } catch (err) {
     console.error("Error checking if FID was updated within 30 minutes:", err);
     return false;
