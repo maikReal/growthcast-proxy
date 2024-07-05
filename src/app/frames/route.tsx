@@ -67,7 +67,7 @@ const handleRequest = async (
         startTrackUser(fid);
 
         return {
-          image: "http://localhost:3000/loader-start.gif",
+          image: `${baseUrl}/loader-start.gif`,
           buttons: [
             <Button action="post" target={{ query: { step: 3 } }}>
               Show
