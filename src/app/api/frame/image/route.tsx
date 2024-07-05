@@ -39,14 +39,15 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
             padding: "40px 40px",
           }}
         >
-          <img
-            src={`${process.env.NEXT_PUBLIC_DOMAIN}/api/frame/animated-image`}
-          />
-          {/* <StreaksFrameImage
+          <StreaksFrameImage
             username={username}
             streaks={streaks}
             isEmptyState={isEmptyState}
-          /> */}
+          />
+          {/* <span style={{ fontSize: "16px", color: "white" }}>
+            {" "}
+            Data for last 30 days
+          </span> */}
         </div>
       </div>,
       {

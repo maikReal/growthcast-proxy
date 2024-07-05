@@ -37,59 +37,21 @@ const handleRequest = async (
   return await frames(async (ctx) => {
     const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "";
 
-    return {
-      image: (
-        <div
-          style={{
-            width: "1020px",
-            height: "540px",
-            backgroundColor: "black",
-            position: "relative",
-            display: "flex",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              color: "white",
-              fontSize: "30px",
-              display: "flex",
-            }}
-          >
-            loading your streaks...
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              display: "flex",
-            }}
-          >
-            <img
-              src={`http://localhost:3000/api/frame/animated-image`}
-              alt="Animated Loader"
-            />
-          </div>
-        </div>
-      ),
-      buttons: [],
-    };
     const message = ctx.message;
 
     let fid = null;
     let username = null;
     let streaks = null;
     let isEmptyState = null;
+    let currentStep = ctx.searchParams.step || null;
+    console.log("Current step: ", currentStep);
 
     if (urlParams) {
       // get username and info => render image
       // return frame
       fid = urlParams?.userFid;
+
+      console.log("URL user fid: ", fid);
       username = (await getUserDataForFid({ fid }))?.username;
     }
 
@@ -99,70 +61,91 @@ const handleRequest = async (
     }
 
     console.log("[DEBUG - frames/route.tsx] User FID: ", fid);
-    if (fid) {
+    if (fid && currentStep == "2") {
       try {
-        await startTrackUser(fid);
+        // Calculating in paralle and not waiting for the result
+        startTrackUser(fid);
 
-        streaks = await calcualteStreaks(fid);
-
-        console.log("[DEBUG - frames/route.tsx] User streaks: ", streaks);
-
-        isEmptyState = "non-empty";
+        return {
+          image: "http://localhost:3000/loader-start.gif",
+          buttons: [
+            <Button action="post" target={{ query: { step: 3 } }}>
+              Show
+            </Button>,
+          ],
+        };
       } catch (error) {
         console.error(
           "[ERROR - frames/route.tsx] Error during the fetching info about fid casts",
           error
         );
-        isEmptyState = "empty";
-
-        return {
-          image: `${baseUrl}/api/frame/image?state=${isEmptyState}&username=${username}&streaks=${streaks}`,
-          buttons: [
-            <Button
-              action="post"
-              target={{ query: { username: username, streaks: streaks } }}
-            >
-              Get my streaks
-            </Button>,
-          ],
-        };
       }
-    } else {
-      isEmptyState = "empty";
+    }
 
+    if (fid && (currentStep == "1" || currentStep == "3")) {
+      try {
+        streaks = await calcualteStreaks(fid);
+
+        console.log("[DEBUG - frames/route.tsx] User streaks: ", streaks);
+      } catch (error) {
+        console.error("Some issue during calculation of streaks", error);
+      }
+    }
+
+    // else if (!fid && currentStep == 2)  {
+    //   isEmptyState = "empty";
+
+    //   return {
+    //     image: `${baseUrl}/api/frame/image?state=${isEmptyState}&username=${username}&streaks=${streaks}`,
+    //     buttons: [
+    //       <Button
+    //         action="post"
+    //         target={{ query: { username: username, streaks: streaks } }}
+    //       >
+    //         Get my streaks
+    //       </Button>,
+    //     ],
+    //   };
+    // }
+
+    if (fid) {
       return {
-        image: `${baseUrl}/api/frame/image?state=${isEmptyState}&username=${username}&streaks=${streaks}`,
+        image: `${baseUrl}/api/frame/image?state=non-empty&username=${username}&streaks=${streaks}`,
         buttons: [
           <Button
             action="post"
-            target={{ query: { username: username, streaks: streaks } }}
+            target={{
+              query: { username: username, streaks: streaks, step: 2 },
+            }}
+          >
+            Get my streaks
+          </Button>,
+          <Button
+            action="link"
+            target={`https://warpcast.com/~/compose?${new URLSearchParams({
+              text: `send it higher ↑\n\nhow high is your cast streak?`,
+              "embeds[]": `${process.env.NEXT_PUBLIC_DOMAIN}/frames/streaks/${fid}`,
+            }).toString()}`}
+          >
+            Share
+          </Button>,
+        ],
+      };
+    } else {
+      return {
+        image: `${baseUrl}/api/frame/image?state=empty&username=${username}&streaks=${streaks}`,
+        buttons: [
+          <Button
+            action="post"
+            target={{
+              query: { username: username, streaks: streaks, step: 2 },
+            }}
           >
             Get my streaks
           </Button>,
         ],
       };
     }
-
-    return {
-      image: `${baseUrl}/api/frame/image?state=${isEmptyState}&username=${username}&streaks=${streaks}`,
-      buttons: [
-        <Button
-          action="post"
-          target={{ query: { username: username, streaks: streaks } }}
-        >
-          Get my streaks
-        </Button>,
-        <Button
-          action="link"
-          target={`https://warpcast.com/~/compose?${new URLSearchParams({
-            text: `send it higher ↑\n\nhow high is your cast streak?`,
-            "embeds[]": `${process.env.NEXT_PUBLIC_DOMAIN}/frames/streaks/${fid}`,
-          }).toString()}`}
-        >
-          Share
-        </Button>,
-      ],
-    };
   })(req);
 };
 
