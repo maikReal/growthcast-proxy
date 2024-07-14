@@ -1,12 +1,30 @@
-# WarpDrive Proxy
+# Growthcast backend
 
 [![Deployment Status](https://vercel.com/maikyman/warp-drive-proxy/badge)](https://vercel.com/maikyman/warp-drive-proxy)
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Getting Started
 
-First, run the development server:
+### Install depndencies
+
+First, install all necessary dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+### Create .env.\* files
+
+Second, create .env and .env.developemnt files for running the project
+
+### Run dev env
+
+Third, run the development server:
 
 ```bash
 npm run dev
@@ -18,36 +36,96 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+API endpoints are available under the following root:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- /api/v1
+- /api/v2
+  Example of the endpoint for the local env:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+curl http://localhost:3000/api/v2/get-fid-history/295767?period=60days
+```
 
-## Learn More
+Growthcast login page avilable by the following path:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- <domain>/signin
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The project is autodeployed to Vercel after every commit. All non-main branches automatically get dev subdomain, e.g. **dev.growthcast.xyz**
+The main branch is available by the **proxy.growthcast.xyz** domain
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+To deploy to vercel manually, use th following command:
 
-# DB SQL Queries
+```bash
+vercel
+```
 
+# Database schemas and queries
+
+## Schemas
+
+### [DEPRECATED] V1
+
+The V1 backend had previously the folowing databases and worked only with them. The V2 endpoints don't work with current tables and work only with those that listed on the V2 section below
+
+```sql
 CREATE TABLE public."warpdrive-db" (
 fid numeric NOT NULL,
 casts json NULL
 );
+```
 
+```sql
 CREATE TABLE warpdrive_webhook_subscribers (
 id SERIAL PRIMARY KEY,
 "user_fid" INTEGER NOT NULL,
 "date_added" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+```
+
+```sql
+CREATE TABLE public.warpdrive_streaks (
+	id serial NOT NULL,
+	user_fid int4 NOT NULL,
+	date_added timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"timestamp" timestamp NOT NULL,
+	hash text NOT NULL,
+	CONSTRAINT warpdrive_streaks_pkey PRIMARY KEY (id)
+);
+```
+
+### V2
+
+The main table in the V2 version is **users_all_historical_data**
+
+```sql
+CREATE TABLE public.users_all_historical_data (
+	fid int4 NULL,
+	cast_timestamp timestamp NULL,
+	cast_text text NULL,
+	cast_hash text NULL,
+	cast_likes int4 NULL,
+	cast_replies int4 NULL,
+	cast_recasts int4 NULL,
+	row_created_date timestamp NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+The FarcasterDataProcessor fetch all user's historical data from the Farcaster node, collect reactions and other statistics and then, using the DatabaseManager, adds it to the database
+
+Later on, current data can be used for generating comparison analytics for different periods as well as for the calculating user's streak
+
+## Logic
+
+### V2
+
+The logic of the FarcasterDataProcessor and FarcasterReactionsDataProcessor is described on the schema below
+
+**TLDR:**
+
+- User logins to the Growthcast
+- Starting to fetch his data from current day to his first day by batches (TBD)
+- Adding batches of data to database
+
+![growthcast-backend-schema](https://github.com/maikReal/warp-drive-proxy/blob/main/public/logic-schema.png?raw=true)

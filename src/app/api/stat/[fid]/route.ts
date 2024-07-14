@@ -9,7 +9,6 @@ import {
 } from "@/utils/helpers";
 import { getCastsByFid } from "@/utils/neynar-requests";
 import axios from "axios";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v1";
 import { isApiErrorResponse } from "@neynar/nodejs-sdk";
 
 export const GET = async (
@@ -25,7 +24,7 @@ export const GET = async (
   // TODO: Change the script to use fid from a JWT token
   console.log("[DEBUG - api/stat/[fid]] Fetching a user's statistic...");
   try {
-    const { data } = await axios.get<{ user: User }>(
+    const { data } = await axios.get(
       `${process.env.NEXT_PUBLIC_DOMAIN}/api/user/${params.fid}`
     );
 
