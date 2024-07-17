@@ -100,7 +100,7 @@ CREATE TABLE public.warpdrive_streaks (
 The main table in the V2 version is **users_all_historical_data**
 
 ```sql
-CREATE TABLE public.users_all_historical_data (
+CREATE TABLE public.users_casts_historical_data (
 	fid int4 NULL,
 	cast_timestamp timestamp NULL,
 	cast_text text NULL,

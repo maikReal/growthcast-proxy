@@ -71,6 +71,11 @@ export class FarcasterReactionsDataProcessor {
       return null;
     }
 
+    // Don't process replies of a user
+    if (cast.data.castAddBody?.parentCastId) {
+      return null;
+    }
+
     const castHash: string = cast.hash;
 
     const castText: string = cast.data.castAddBody.text; // Should process the case if text if not available here ???

@@ -5,8 +5,9 @@ import {
   FarcasterReactionsDataProcessor,
 } from "./farcasterReactionsProcessor";
 import { DatabaseManager } from "../database/databaseManager";
+import { logInfo } from "../logs/sentryLogger";
 
-export type HistoricalDataPeriods = "all" | "60days";
+export type HistoricalDataPeriods = 60 | 90;
 
 export interface HistoricalDataFormat {
   data: {
@@ -28,7 +29,7 @@ export interface HistoricalDataFormat {
 export class FarcasterHistoricalDataProcessor {
   private fid: number;
   private nowTime: Date = new Date();
-  private periodStartDate: Date;
+  private periodEndDate: Date;
   private userHistoricalData: Array<HistoricalDataFormat>;
   private batchSize: number;
 
@@ -39,11 +40,12 @@ export class FarcasterHistoricalDataProcessor {
 
   constructor(
     fid: number,
-    period: HistoricalDataPeriods,
+    period: HistoricalDataPeriods | null,
     batchSize: number = 5
   ) {
     this.fid = fid;
-    this.periodStartDate = this.calcualtePeriodStartDate(period);
+    this.periodEndDate = this.calcualtePeriodStartDate(period);
+    logInfo(`End date: ${this.periodEndDate}`);
     this.userHistoricalData = new Array<HistoricalDataFormat>();
     this.batchSize = batchSize;
 
@@ -52,14 +54,15 @@ export class FarcasterHistoricalDataProcessor {
     this.dbManager = DatabaseManager.getInstance();
   }
 
-  private calcualtePeriodStartDate(period: HistoricalDataPeriods) {
+  private calcualtePeriodStartDate(period: HistoricalDataPeriods | null) {
     switch (period) {
-      case "60days":
-        return new Date(this.nowTime.getTime() - 60 * 24 * 60 * 60 * 1000);
+      // If there is no period: return data for the last 1 year
+      case null:
+        return new Date(this.nowTime.getTime() - 360 * 24 * 60 * 60 * 1000);
 
-      // Back data for last 60 days by default
+      // If there is a period: use it to calcualte the date
       default:
-        return new Date(this.nowTime.getTime() - 60 * 24 * 60 * 60 * 1000);
+        return new Date(this.nowTime.getTime() - period * 24 * 60 * 60 * 1000);
     }
   }
 
@@ -89,7 +92,7 @@ export class FarcasterHistoricalDataProcessor {
         console.log(`Processed batch: ${userCasts.length} casts`);
         console.log("Latest cast timestamp:", firstMessageTimestamp);
 
-        if (firstMessageTimestamp < this.periodStartDate || !nextPageToken) {
+        if (firstMessageTimestamp < this.periodEndDate || !nextPageToken) {
           shouldContinue = false;
           break;
         }
@@ -102,9 +105,6 @@ export class FarcasterHistoricalDataProcessor {
     console.log("Total number of casts:", this.userHistoricalData.length);
 
     // this.reactionsDataProcessor.setUserCasts(this.userHistoricalData);
-
-    // Close the database connection after adding all user's historical data
-    this.dbManager.close();
   }
 
   private async fetchSingleRequest(pageToken: string): Promise<{
@@ -141,7 +141,7 @@ export class FarcasterHistoricalDataProcessor {
     this.userHistoricalData = [...this.userHistoricalData, ...batch];
 
     // Fetching replies and likes for a batch of casts that we received
-    // Create a clas fore getting reactions and replies
+    // Create a class for getting reactions and replies
     const reactionsDataProcessor = new FarcasterReactionsDataProcessor(
       this.fid
     );
@@ -163,16 +163,20 @@ export class FarcasterHistoricalDataProcessor {
   }
 
   private async addBatchToDatabase(batch: CastInfoProps[]) {
-    // Implement the logic to add the batch to the database
-    // This is a placeholder implementation
-    console.log(`Adding ${batch.length} casts to the database`);
+    console.log(
+      `🚀 Adding batch with the ${batch.length} length to the database`
+    );
     // await DatabaseClient.addCasts(batch);
 
     try {
-      this.dbManager.addHistoricalData(this.fid, batch);
+      await this.dbManager.addHistoricalData(this.fid, batch);
+      console.log(`🚀 Added batch with the length: ${batch.length}`);
     } catch (error) {
       console.log("Error while adding info to database...");
     }
+
+    // Close the database connection after adding all user's historical data
+    // this.dbManager.close();
   }
 
   public getHistoricalData() {
@@ -183,48 +187,8 @@ export class FarcasterHistoricalDataProcessor {
     return this.userDataWithReactions;
   }
 
-  // public async fetchHistoricalData() {
-  //   let response;
-  //   let firstMessageTimestamp: Date;
-  //   let pageToken: string = "";
-
-  //   do {
-  //     // Fetching casts: last relevant frist
-  //     response = await axios.get(
-  //       `${process.env.NEXT_PUBLIC_NODE_ADDRESS}/v1/castsByFid?fid=${this.fid}&reverse=1&pageSize=800&pageToken=${pageToken}`
-  //     );
-
-  //     const userCasts = response.data.messages;
-  //     pageToken = response.data.nextPageToken;
-
-  //     // Getting the last cast in the response to understand the latest date of the cast
-  //     const latestCastDetails = userCasts[userCasts.length - 1].data; // Assuming the first message is at the start of the array
-
-  //     const humanReadableDate = farcasterTimestampToHumanReadable(
-  //       latestCastDetails.timestamp
-  //     ); // ConvertFarcaster timestamp to human readable date
-
-  //     this.userHistoricalData = [...this.userHistoricalData, ...userCasts];
-
-  //     firstMessageTimestamp = new Date(humanReadableDate);
-
-  //     // console.log(userCasts);
-  //     console.log(
-  //       "User's casts batches timestamps (latest cast timestamp / period end date): ",
-  //       firstMessageTimestamp,
-  //       this.periodStartDate
-  //     );
-  //     //   break;
-  //   } while (firstMessageTimestamp >= this.periodStartDate);
-
-  //   console.log(
-  //     "Historical data is fetched. the number of rows:",
-  //     this.userHistoricalData.length
-  //   );
-
-  //   // Set historical user data for further processing and receiving reactions info
-  //   this.reactionsDataProcessor.setUserCasts(this.userHistoricalData);
-  // }
+  // TODO: Prepare the method that can fetch user's fids for a specific period from a node
+  public fetchFidFollowers() {}
 
   // The method that will get the comparison analytics for different periods: 7 days, 14 days, 30 days
   // public async getComparisonAnalytics() {
