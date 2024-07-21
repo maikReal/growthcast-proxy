@@ -1,11 +1,16 @@
 import axios from "axios";
-import { farcasterTimestampToHumanReadable } from "@/utils/helpers";
+import {
+  farcasterTimestampToHumanReadable,
+  getCurrentFilePath,
+} from "@/utils/helpers";
 import {
   CastInfoProps,
   FarcasterReactionsDataProcessor,
 } from "./farcasterReactionsProcessor";
 import { DatabaseManager } from "../database/databaseManager";
-import { logInfo } from "../logs/sentryLogger";
+import { logError, logInfo } from "../logs/sentryLogger";
+
+const logsFilenamePath = getCurrentFilePath();
 
 export type HistoricalDataPeriods = 60 | 90;
 
@@ -31,29 +36,47 @@ export class FarcasterHistoricalDataProcessor {
   private nowTime: Date = new Date();
   private periodEndDate: Date;
   private userHistoricalData: Array<HistoricalDataFormat>;
-  private batchSize: number;
+  private requestPageSize: number;
 
   private dbManager: DatabaseManager;
 
   // Temprorary
   private userDataWithReactions: CastInfoProps[];
 
+  /**
+   *
+   * @param {number} [fid] - the user's fid
+   * @param {HistoricalDataPeriods} [period] - the period for which we need to fethc the historical data
+   * @param {Date} [customEndData] - the custom date after which we don't need to process data. Necessary for the updating already existed users
+   * @param {number} [requestPageSize] - the number of elements that we get for a request to the Farcaster Node
+   */
   constructor(
     fid: number,
     period: HistoricalDataPeriods | null,
-    batchSize: number = 5
+    customEndData?: Date,
+    requestPageSize?: number
   ) {
     this.fid = fid;
-    this.periodEndDate = this.calcualtePeriodStartDate(period);
-    logInfo(`End date: ${this.periodEndDate}`);
+    this.periodEndDate = customEndData
+      ? customEndData
+      : this.calcualtePeriodStartDate(period);
+    logInfo(
+      `[DEBUG - ${logsFilenamePath}] Date until we'll fetch user's data: ${this.periodEndDate}`
+    );
+    this.requestPageSize = requestPageSize ? requestPageSize : 800;
     this.userHistoricalData = new Array<HistoricalDataFormat>();
-    this.batchSize = batchSize;
 
     this.userDataWithReactions = new Array<CastInfoProps>();
 
     this.dbManager = DatabaseManager.getInstance();
   }
 
+  /**
+   * The method to generate the period start date. The method won't proceed further casts timestamps of which are less the this date
+   *
+   * @param {HistoricalDataFormat} [period] - the period for which we need to get historical data
+   * @returns
+   */
   private calcualtePeriodStartDate(period: HistoricalDataPeriods | null) {
     switch (period) {
       // If there is no period: return data for the last 1 year
@@ -66,55 +89,67 @@ export class FarcasterHistoricalDataProcessor {
     }
   }
 
-  // The method that will collect a user's casts for a specific period, e.g. last 60 days
+  /**
+   * The method that will collect a user's casts for a specific period, e.g. last 60 days
+   *
+   */
   public async fetchHistoricalData() {
     // Inititalize database manager first
-    console.log("📣 Initializing database connection n tables creation...");
-    await this.dbManager.initialize();
+    if (!this.dbManager.isInitialized()) {
+      logInfo(
+        `[DEBUG - ${logsFilenamePath}] 👨‍💻 Initializing database connection. Creating tables...`
+      );
+      await this.dbManager.initialize();
+    }
 
     let pageToken: string = "";
     let shouldContinue = true;
 
     while (shouldContinue) {
-      const batchPromises = [];
-      for (let i = 0; i < this.batchSize && shouldContinue; i++) {
-        batchPromises.push(this.fetchSingleRequest(pageToken));
+      const result = await this.fetchUserCasts(pageToken);
+
+      if (!result) {
+        shouldContinue = false;
+        continue;
       }
 
-      const batchResults = await Promise.all(batchPromises);
+      const { userCasts, nextPageToken, firstMessageTimestamp } = result;
+      this.processBatch(userCasts); // Should I add await here ???
 
-      for (const result of batchResults) {
-        if (!result) continue;
+      logInfo(
+        `[DEBUG - ${logsFilenamePath}] Processed batch: ${userCasts.length} casts`
+      );
+      logInfo(
+        `[DEBUG - ${logsFilenamePath}] Latest cast timestamp: ${firstMessageTimestamp}`
+      );
 
-        const { userCasts, nextPageToken, firstMessageTimestamp } = result;
-        await this.processBatch(userCasts);
-
-        console.log(`Processed batch: ${userCasts.length} casts`);
-        console.log("Latest cast timestamp:", firstMessageTimestamp);
-
-        if (firstMessageTimestamp < this.periodEndDate || !nextPageToken) {
-          shouldContinue = false;
-          break;
-        }
-
+      if (firstMessageTimestamp < this.periodEndDate || !nextPageToken) {
+        shouldContinue = false;
+      } else {
         pageToken = nextPageToken;
       }
     }
 
-    console.log("Historical data fetching completed.");
-    console.log("Total number of casts:", this.userHistoricalData.length);
-
-    // this.reactionsDataProcessor.setUserCasts(this.userHistoricalData);
+    logInfo("Historical data fetching completed");
+    logInfo(
+      `Total number of casts that were processed: ${this.userHistoricalData.length}`
+    );
   }
 
-  private async fetchSingleRequest(pageToken: string): Promise<{
+  /**
+   * A method that is making a request to get fid's data casts using pagination
+   *
+   * @param {string} [pageToken] - the pagination token
+   * @returns
+   */
+  private async fetchUserCasts(pageToken: string): Promise<{
     userCasts: HistoricalDataFormat[];
     nextPageToken: string;
     firstMessageTimestamp: Date;
   } | null> {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_NODE_ADDRESS}/v1/castsByFid?fid=${this.fid}&reverse=1&pageSize=800&pageToken=${pageToken}`
+        `${process.env.NEXT_PUBLIC_NODE_ADDRESS}/v1/castsByFid?fid=${this.fid}&reverse=1&pageSize=${this.requestPageSize}&pageToken=${pageToken}`
       );
 
       const userCasts = response.data.messages;
@@ -132,24 +167,31 @@ export class FarcasterHistoricalDataProcessor {
 
       return { userCasts, nextPageToken, firstMessageTimestamp };
     } catch (error) {
-      console.error("Error fetching data:", error);
+      logError(`[DEBUG - ${logsFilenamePath}] Error fetching data: ${error}`);
       return null;
     }
   }
 
+  /**
+   * The method to fetch reactions for the batch of casts and then add the recevied statistic to the database
+   *
+   * @param {HistoricalDataFormat[]} [batch] - the batch of data with fid's casts that will be processed
+   */
   private async processBatch(batch: HistoricalDataFormat[]) {
     this.userHistoricalData = [...this.userHistoricalData, ...batch];
 
     // Fetching replies and likes for a batch of casts that we received
     // Create a class for getting reactions and replies
     const reactionsDataProcessor = new FarcasterReactionsDataProcessor(
-      this.fid
+      this.fid,
+      this.periodEndDate
     );
 
     // Set batch data for the class
     reactionsDataProcessor.setUserCasts(batch);
 
     // Fetch likes, recasts, and replies for the batch of casts
+    // There will be processed only user's casts (not replies) + the timestamp of which is less then the periodEndDate
     const batchWithLikesNReplies =
       await reactionsDataProcessor.fetchReactionsAnalytics();
 
@@ -162,42 +204,41 @@ export class FarcasterHistoricalDataProcessor {
     await this.addBatchToDatabase(batchWithLikesNReplies);
   }
 
+  /**
+   * The method that is adding the batch of fid's casts and their stats to the database
+   *
+   * @param {CastInfoProps[]} [batch] - the batch of fid's casts that will be added to database
+   */
   private async addBatchToDatabase(batch: CastInfoProps[]) {
-    console.log(
-      `🚀 Adding batch with the ${batch.length} length to the database`
-    );
-    // await DatabaseClient.addCasts(batch);
-
     try {
       await this.dbManager.addHistoricalData(this.fid, batch);
-      console.log(`🚀 Added batch with the length: ${batch.length}`);
+      logInfo(
+        `[DEBUG - ${logsFilenamePath}] 🚀 There were added ${batch.length} casts to the database for the ${this.fid} FID`
+      );
     } catch (error) {
-      console.log("Error while adding info to database...");
+      logError(
+        `[DEBUG - ${logsFilenamePath}] Error while adding info to database: ${error}`
+      );
     }
-
-    // Close the database connection after adding all user's historical data
-    // this.dbManager.close();
   }
 
+  /**
+   * The method to get raw historical data without reactions
+   *
+   * @returns
+   */
   public getHistoricalData() {
     return this.userHistoricalData;
   }
 
+  /**
+   * The method to get historical data with reactions
+   * @returns
+   */
   public getDataWithReactions() {
     return this.userDataWithReactions;
   }
 
   // TODO: Prepare the method that can fetch user's fids for a specific period from a node
   public fetchFidFollowers() {}
-
-  // The method that will get the comparison analytics for different periods: 7 days, 14 days, 30 days
-  // public async getComparisonAnalytics() {
-  //   console.log("Fetching reactions for historical data...");
-  //   return await this.reactionsDataProcessor.fetchReactionsAnalytics();
-  // }
-
-  // Add the comparison analytics for a specific date to database. The result of getComparisonAnalytics function
-  // private addComparisonAnalyticsToDb() {
-  // Save comparison analytics to database, so we can update the data later using DatabaseProcessor
-  // }
 }

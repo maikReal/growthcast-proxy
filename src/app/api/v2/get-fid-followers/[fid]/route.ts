@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import neynarClient from "@/clients/neynar";
-import { internalServerErrorHttpResponse } from "@/utils/helpers";
+import {
+  getCurrentFilePath,
+  internalServerErrorHttpResponse,
+} from "@/utils/helpers";
 import { DatabaseManager } from "@/utils/v2/database/databaseManager";
+import { logError } from "@/utils/v2/logs/sentryLogger";
 
 export interface UserInfo {
   fid: number;
@@ -13,6 +17,16 @@ export interface UserInfo {
   verifications: object;
 }
 
+const logsFilenamePath = getCurrentFilePath();
+
+/**
+ * The endpoint to fetch the current fid followers. It's not a historical data of followers!
+ * Will be changed
+ *
+ * @param request
+ * @param param1
+ * @returns
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: { fid: string } }
@@ -26,7 +40,9 @@ export async function GET(
       let userData = users[0] as UserInfo;
 
       const dbManager = DatabaseManager.getInstance();
-      dbManager.initialize();
+      if (!dbManager.isInitialized()) {
+        await dbManager.initialize();
+      }
 
       const query = `
             INSERT INTO users_info (fid, username, display_name, pfp_url, followers, following, verified_address)
@@ -50,9 +66,8 @@ export async function GET(
       return NextResponse.json({ user: null }, { status: 201 });
     }
   } catch (err) {
-    console.error(
-      "[ERROR - api/v2/farcaster-data/fetch-bio/[fid]] Error while getting bio info about a user",
-      err
+    logError(
+      `[ERROR - ${logsFilenamePath}] Error while getting bio info about a user: ${err}`
     );
     return internalServerErrorHttpResponse(err);
   }

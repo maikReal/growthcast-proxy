@@ -12,6 +12,11 @@ export class DatabaseManager {
 
   private constructor() {}
 
+  /**
+   * The method to get the DatabaseManager instance if it was already created before
+   *
+   * @returns {DatabaseManager}
+   */
   public static getInstance(): DatabaseManager {
     if (!DatabaseManager.instance) {
       DatabaseManager.instance = new DatabaseManager();
@@ -19,12 +24,30 @@ export class DatabaseManager {
     return DatabaseManager.instance;
   }
 
+  /**
+   * The method to link the sharedDatabasePool connection to the instance
+   * Also, calling a methoid that checking and creating all necessary database tables
+   *
+   */
   public async initialize(): Promise<void> {
     this.pool = sharedDatabasePool;
 
     await this.checkAndCreateTables();
   }
 
+  /**
+   * The method to check if the DatabaseManager instance was initialized
+   *
+   * @returns {boolean}
+   */
+  public isInitialized(): boolean {
+    return this.pool ? true : false;
+  }
+
+  /**
+   * The method to check and create all necessary table for the database
+   *
+   */
   private async checkAndCreateTables(): Promise<void> {
     if (!this.pool) {
       throw new Error("Database not initialized");
@@ -64,6 +87,12 @@ export class DatabaseManager {
     }
   }
 
+  /**
+   * The method to add historical data that was received from the node
+   *
+   * @param {number} [fid] - the fid of a user
+   * @param {CastInfoProps[]} [data] - the array of historical casts for a fid
+   */
   public async addHistoricalData(
     fid: number,
     data: CastInfoProps[]
@@ -72,12 +101,16 @@ export class DatabaseManager {
       throw new Error("Database not initialized");
     }
 
-    console.log("👨‍💻 Establishing connect with a database...");
+    logInfo(
+      `[DEBUG - ${logsFilenamePath}] 👨‍💻 Establishing the connection with a database...`
+    );
 
     const client = await this.pool.connect();
 
     try {
-      console.log("👨‍💻 Starting to add data to database...");
+      logInfo(
+        `[DEBUG - ${logsFilenamePath}] 👨‍💻 Starting to add data to database...`
+      );
       await client.query("BEGIN");
 
       const queryText = `
@@ -105,25 +138,34 @@ export class DatabaseManager {
       ]);
 
       const result = await client.query(queryText, queryValues);
-      console.log(`Inserted ${result.rowCount} rows`);
+      logInfo(`[DEBUG - ${logsFilenamePath}] Inserted ${result.rowCount} rows`);
 
       await client.query("COMMIT");
-    } catch (e) {
-      console.log("Error during adding data to database", e);
+    } catch (err) {
+      logError(
+        `[DEBUG - ${logsFilenamePath}] Error during adding data to database: ${err}`
+      );
       await client.query("ROLLBACK");
-      throw e;
+      throw err;
     } finally {
       client.release();
-      console.log("DB released");
+      logInfo(`[DEBUG - ${logsFilenamePath}] DB released 🔗`);
     }
   }
 
+  /**
+   * The method to execeute custom SQL queries
+   *
+   * @param {string} [query] - sql query
+   * @param {any[]} [queryParams] - the array of different params for the sql query
+   * @returns
+   */
   public async executeQuery(query: string, queryParams: Array<any>) {
     if (this.pool) {
       const client = await this.pool.connect();
 
       logInfo(
-        `[DEBUG - ${logsFilenamePath}] Connection with database established. Executing the custom SQL query`
+        `[DEBUG - ${logsFilenamePath}] 👨‍💻 Establishing the connection with a database and executing the custom SQL query`
       );
 
       try {
@@ -132,17 +174,19 @@ export class DatabaseManager {
 
           return result;
         } catch (error) {
-          logInfo(
-            `[DEBUG - ${logsFilenamePath}] Issue occured while processing custom SQL request -> ${error}`
+          logError(
+            `[ERROR - ${logsFilenamePath}] Issue occured while processing custom SQL request -> ${error}`
           );
           return null;
         }
-      } catch (e) {
-        console.log("Error during adding data to database", e);
-        throw e;
+      } catch (error) {
+        logError(
+          `[ERROR - ${logsFilenamePath}] Error during adding data to database: ${error}`
+        );
+        throw error;
       } finally {
         client.release();
-        console.log("DB released");
+        logInfo(`[DEBUG - ${logsFilenamePath}] DB released 🔗`);
       }
     } else {
       logInfo(`[DEBUG - ${logsFilenamePath}] No connection with database`);
@@ -150,6 +194,47 @@ export class DatabaseManager {
     }
   }
 
+  /**
+   * The method to get the last dete when historical data was fetched
+   *
+   * @param fid - the user's fid
+   * @returns {Date}
+   */
+  public async getLastFetchDateOfFidData(
+    fid: number
+  ): Promise<Date | null | undefined> {
+    if (this.pool) {
+      const client = await this.pool.connect();
+
+      try {
+        const query = `
+      SELECT MIN(row_created_date) as earliest_date
+      FROM users_casts_historical_data
+      WHERE fid = $1;
+    `;
+
+        // Execute the query
+        const res = await client.query(query, [fid]);
+
+        // Extract the earliest date from the result
+        const earliestDate = res.rows[0]?.earliest_date || null;
+
+        return earliestDate ? new Date(earliestDate) : null;
+      } catch (error) {
+        logError(
+          `[ERROR - ${logsFilenamePath}] Error executing query: ${error}`
+        );
+        throw error;
+      } finally {
+        client.release();
+        logInfo(`[DEBUG - ${logsFilenamePath}] DB released 🔗`);
+      }
+    }
+  }
+
+  /**
+   * The metod to close the connection to the database
+   */
   public async close(): Promise<void> {
     if (this.pool) {
       await this.pool.end();

@@ -1,8 +1,7 @@
 import axios from "axios";
 import { DatabaseManager } from "./databaseManager";
-import { logInfo } from "../logs/sentryLogger";
+import { logError, logInfo } from "../logs/sentryLogger";
 import { getCurrentFilePath } from "@/utils/helpers";
-import { UserInfo } from "@/app/api/v2/get-fid-followers/[fid]/route";
 import { ComparisonAnalyticsDataPeriods } from "@/app/api/v2/get-fid-comparison-analytics/[fid]/route";
 
 const logsFilenamePath = getCurrentFilePath();
@@ -26,11 +25,19 @@ export class AnalyticalManager {
   constructor(fid: number) {
     this.fid = fid;
     this.dbManager = DatabaseManager.getInstance();
-
-    this.dbManager.initialize();
   }
 
-  async getComparisonAnalytics(period: ComparisonAnalyticsDataPeriods) {
+  /**
+   * The method to generate the comparison analytics for a FID based on his historical data
+   *
+   * @param {ComparisonAnalyticsDataPeriods} [period] - the period for which the compariosn analytics should be generated
+   * @returns {Object}
+   */
+  public async getComparisonAnalytics(period: ComparisonAnalyticsDataPeriods) {
+    if (!this.dbManager.isInitialized()) {
+      await this.dbManager.initialize();
+    }
+
     try {
       logInfo(
         `[DEBUG - ${logsFilenamePath}] Collecting comparison analytics for the ${this.fid} FID`
@@ -62,32 +69,50 @@ export class AnalyticalManager {
         previousTotalReplies: comparisonData.previous.totalReplies,
       };
 
-      //   return JSON.stringify(fileData, null, 2);
       return comparisonAnalytics;
-    } finally {
-      // this.dbManager.close();
+    } catch (err) {
+      logError(
+        `[ERROR - ${logsFilenamePath}] Error occured while fetching comparison analytics: ${err}`
+      );
     }
   }
 
+  /**
+   * The method to generate the data for the comparison analytics for different periods
+   *
+   * @param {ComparisonAnalyticsDataPeriods} [period] - the period for which we need to get the comparison analytics
+   * @returns {ComparisonData}
+   */
   private async getComparisonData(
-    days: ComparisonAnalyticsDataPeriods
+    period: ComparisonAnalyticsDataPeriods
   ): Promise<ComparisonData> {
     const current = await this.getAnalyticsData(
-      `NOW() - INTERVAL '${days} days'`,
+      `NOW() - INTERVAL '${period} days'`,
       "NOW()"
     );
 
-    console.log("Current res", current);
-
-    const previous = await this.getAnalyticsData(
-      `NOW() - INTERVAL '${2 * days} days'`,
-      `NOW() - INTERVAL '${days} days'`
+    logInfo(
+      `[DEBUG - ${logsFilenamePath}] Analytics for the current period: ${current}`
     );
 
-    console.log("Previous res", previous);
+    const previous = await this.getAnalyticsData(
+      `NOW() - INTERVAL '${2 * period} days'`,
+      `NOW() - INTERVAL '${period} days'`
+    );
+
+    logInfo(
+      `[DEBUG - ${logsFilenamePath}] Analytics for the previous period: ${previous}`
+    );
     return { current, previous };
   }
 
+  /**
+   * The method that calcualtes the total number of likes, recasts, replies for a specific period and fid
+   *
+   * @param {string} [startDate] - the period start date
+   * @param {string} [endDate] - the period end date
+   * @returns {AnalyticsData}
+   */
   private async getAnalyticsData(
     startDate: string,
     endDate: string
@@ -106,6 +131,11 @@ export class AnalyticalManager {
     return result ? result.rows[0] : null;
   }
 
+  /**
+   * The method to get the current number of followers for a specific fid
+   *
+   * @returns {number}
+   */
   private async getTotalFollowersFromDatabase(): Promise<number> {
     const query = `
           SELECT followers
@@ -118,6 +148,11 @@ export class AnalyticalManager {
     return result ? result.rows[0]?.followers || 0 : null;
   }
 
+  /**
+   * The method to fetch the current number of fid's followers using Neynar API thought the specific backend endpoint
+   *
+   * @returns {number}
+   */
   private async fetchFidFollowers() {
     try {
       const response = await axios.get(
@@ -137,7 +172,9 @@ export class AnalyticalManager {
         null;
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      logError(
+        `[ERROR - ${logsFilenamePath}] Error fetching user data: ${error}`
+      );
     }
   }
 }

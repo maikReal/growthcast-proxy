@@ -3,22 +3,30 @@ import { headers } from "next/headers";
 import {
   nonAuthHttpResponse,
   internalServerErrorHttpResponse,
-  successHttpResponse,
   verifyAuth,
   generateApiResponse,
   getCurrentFilePath,
   unprocessableHttpResponse,
 } from "@/utils/helpers";
 import { AnalyticalManager } from "@/utils/v2/database/analyticalManager";
-import { logInfo } from "@/utils/v2/logs/sentryLogger";
+import { logError, logInfo } from "@/utils/v2/logs/sentryLogger";
 
 const logsFilenamePath = getCurrentFilePath();
 
 export type ComparisonAnalyticsDataPeriods = 7 | 14 | 28;
 
 /**
- * The route to get a fid's comparison analytics for last 60 days of his posts. Likes, recasts, replies,
- * and the number of casts will be included to this statisti
+ * The route to get a fid's comparison analytics for last 60 days of his posts.
+ * Likes, recasts, replies, and the number of casts will be included to this statistic
+ * All information is available directly on the PostgreSQL database
+ *
+ * URL params:
+ * - [MANDATORY] period: 7 | 14 | 28
+ *
+ * Request example:
+ * ```
+ *  http://localhost:3000/api/v2/get-fid-comparison-analytics/14069?period=7
+ * ```
  *
  * @param request
  * @param params
@@ -55,7 +63,7 @@ export const GET = async (
 
     return generateApiResponse({ status: 200 }, result);
   } catch (err) {
-    console.log(err);
+    logError(`[ERROR - ${logsFilenamePath}] ${err}`);
     return internalServerErrorHttpResponse(err);
   }
 };

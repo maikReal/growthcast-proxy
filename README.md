@@ -125,7 +125,12 @@ The logic of the FarcasterDataProcessor and FarcasterReactionsDataProcessor is d
 **TLDR:**
 
 - User logins to the Growthcast
-- Starting to fetch his data from current day to his first day by batches (TBD)
+- Starting to fetch his data from current day to his first day by batches
 - Adding batches of data to database
 
-![growthcast-backend-schema](https://github.com/maikReal/warp-drive-proxy/blob/main/public/logic-schema.png?raw=true)
+![growthcast-backend-schema](https://github.com/maikReal/warp-drive-proxy/blob/main/public/app-logic.png?raw=true)
+
+## TODO
+
+- [x] Add logs to Sentry
+- [x] Remove unnecesary code

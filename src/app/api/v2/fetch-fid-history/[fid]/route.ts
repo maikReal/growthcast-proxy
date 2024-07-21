@@ -3,7 +3,6 @@ import {
   getCurrentFilePath,
   internalServerErrorHttpResponse,
   nonAuthHttpResponse,
-  unprocessableHttpResponse,
   verifyAuth,
 } from "@/utils/helpers";
 import { headers } from "next/headers";
@@ -17,6 +16,32 @@ import {
 
 const logsFilenamePath = getCurrentFilePath();
 
+/**
+ * The endpoint to fetch user's data for a specific period
+ * All data is inserting to "users_casts_historical_data" table on PostgreSQL
+ * The following data is added to the table:
+ * - fid
+ * - cast_text
+ * - cast_timestamp
+ * - cast_hash
+ * - cast_likes
+ * - cast_replies
+ * - cast_recasts
+ *
+ * URL params:
+ * - [OPTIONAL] period: null | 60 | 90
+ *
+ * If the period param wasn't provided, the endpoint will fetch data for the last year
+ *
+ * Request example:
+ * ```
+ *  http://localhost:3000/api/v2/fetch-fid-history/14069
+ * ```
+ *
+ * @param request
+ * @param param1
+ * @returns
+ */
 export const GET = async (
   request: NextRequest,
   { params }: { params: { fid: number } }
@@ -33,10 +58,6 @@ export const GET = async (
     `[DEBUG - ${logsFilenamePath}] Trying to get info for the following time period: ${typePeriod}`
   );
 
-  if (!typePeriod) {
-    return unprocessableHttpResponse();
-  }
-
   if (!verifyAuth(currentHeaders)) {
     return nonAuthHttpResponse();
   }
@@ -52,11 +73,10 @@ export const GET = async (
     );
 
     try {
-      console.log("Fetching historical data...");
+      logInfo(`[DEBUG - ${logsFilenamePath}] Fetching historical data...`);
       await historialDataProcessor.fetchHistoricalData();
-      const historicalFidData = historialDataProcessor.getDataWithReactions();
 
-      return generateApiResponse({ status: 200 }, historicalFidData);
+      return generateApiResponse({ status: 200 }, true);
     } catch (e) {
       // Handle errors
       console.log("Error: ", e);
