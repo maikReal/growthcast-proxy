@@ -128,7 +128,7 @@ The logic of the FarcasterDataProcessor and FarcasterReactionsDataProcessor is d
 - Starting to fetch his data from current day to his first day by batches
 - Adding batches of data to database
 
-![growthcast-backend-schema](https://github.com/maikReal/warp-drive-proxy/blob/main/public/app-logic.png?raw=true)
+![growthcast-backend-schema](https://raw.githubusercontent.com/maikReal/warp-drive-proxy/user-stat-fix/public/app-logic.png?raw=true)
 
 ## TODO
 
