@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import neynarClient from "@/clients/neynar";
 import {
+  generateApiResponse,
   getCurrentFilePath,
   internalServerErrorHttpResponse,
 } from "@/utils/helpers";
@@ -61,9 +62,9 @@ export async function GET(
 
       dbManager.executeQuery(query, queryParams);
 
-      return NextResponse.json({ user: userData }, { status: 200 });
+      return generateApiResponse({ status: 200 }, { user: userData });
     } else {
-      return NextResponse.json({ user: null }, { status: 201 });
+      return generateApiResponse({ status: 201 }, { user: null });
     }
   } catch (err) {
     logError(

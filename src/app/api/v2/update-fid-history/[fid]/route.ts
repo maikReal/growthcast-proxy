@@ -63,11 +63,9 @@ export const GET = async (
 
       await farcasterDataProcessor.fetchHistoricalData();
 
-      return generateApiResponse({ status: 200 }, true);
+      return generateApiResponse({ status: 200 }, { response: true });
     }
   } catch (err) {
     return internalServerErrorHttpResponse(err);
-  } finally {
-    dbManager.close();
   }
 };

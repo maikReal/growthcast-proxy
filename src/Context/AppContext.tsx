@@ -83,14 +83,7 @@ export const AppProvider: FC<Props> = ({ children }) => {
       setScreen(ScreenState.Home);
     } else {
       if (signerUuid && fid) {
-        // const verifiedUser = await verifyUser(signerUuid, fid);
-        // if (verifiedUser) {
-        //   setUser({ signerUuid, fid });
-        //   setScreen(ScreenState.Home);
-        // } else {
-        //   removeUser();
-        //   setScreen(ScreenState.Signin);
-        // }
+        setScreen(ScreenState.Home);
       } else {
         setScreen(ScreenState.Signin);
       }

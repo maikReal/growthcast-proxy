@@ -76,7 +76,7 @@ export const GET = async (
       logInfo(`[DEBUG - ${logsFilenamePath}] Fetching historical data...`);
       await historialDataProcessor.fetchHistoricalData();
 
-      return generateApiResponse({ status: 200 }, true);
+      return generateApiResponse({ status: 200 }, { response: true });
     } catch (e) {
       // Handle errors
       console.log("Error: ", e);
