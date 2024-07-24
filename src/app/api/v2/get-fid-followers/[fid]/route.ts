@@ -4,9 +4,12 @@ import {
   generateApiResponse,
   getCurrentFilePath,
   internalServerErrorHttpResponse,
+  nonAuthHttpResponse,
+  verifyAuth,
 } from "@/utils/helpers";
 import { DatabaseManager } from "@/utils/v2/database/databaseManager";
 import { logError } from "@/utils/v2/logs/sentryLogger";
+import { headers } from "next/headers";
 
 export interface UserInfo {
   fid: number;
@@ -32,6 +35,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { fid: string } }
 ) {
+  const currentHeaders = headers();
+
+  if (!verifyAuth(currentHeaders)) {
+    return nonAuthHttpResponse();
+  }
+
   try {
     const fid = parseInt(params.fid);
 
