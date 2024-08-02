@@ -5,7 +5,8 @@ import {
   nonAuthHttpResponse,
   verifyAuth,
 } from "@/utils/helpers";
-import { DatabaseManager } from "@/utils/v2/database/databaseManager";
+import { CastsInfoManager } from "@/utils/v2/database/castsInfoManager";
+import { UserInfoManager } from "@/utils/v2/database/userInfoManager";
 import { FarcasterHistoricalDataProcessor } from "@/utils/v2/dataProcessors/farcasterDataProcessor";
 import { logInfo } from "@/utils/v2/logs/sentryLogger";
 import { headers } from "next/headers";
@@ -32,18 +33,15 @@ export const GET = async (
     return nonAuthHttpResponse();
   }
 
-  const dbManager = DatabaseManager.getInstance();
-  try {
-    if (!dbManager.isInitialized()) {
-      await dbManager.initialize();
-    }
+  const castsInfoManager = new CastsInfoManager(params.fid);
 
+  try {
     logInfo(
       `[DEBUG - ${logsFilenamePath}] Requesting the recent casts fetch date for the ${params.fid} FID...`
     );
 
     // get the last fetch date for a fid
-    const lastFetchDate = await dbManager.getLastFetchDateOfFidData(params.fid);
+    const lastFetchDate = await castsInfoManager.getLastFetchDateOfFidData();
 
     if (!lastFetchDate) {
       // It means that there is no casts for a requested fid in our database
@@ -63,7 +61,13 @@ export const GET = async (
 
       await farcasterDataProcessor.fetchHistoricalData();
 
-      return generateApiResponse({ status: 200 }, { response: true });
+      const userUnfoManager = new UserInfoManager(params.fid);
+      const managerResponse = await userUnfoManager.updateUserInfo();
+
+      return generateApiResponse(
+        { status: 200 },
+        { response: managerResponse }
+      );
     }
   } catch (err) {
     return internalServerErrorHttpResponse(err);

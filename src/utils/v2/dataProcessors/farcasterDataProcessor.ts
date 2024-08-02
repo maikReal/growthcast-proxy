@@ -9,6 +9,8 @@ import {
 } from "./farcasterReactionsProcessor";
 import { DatabaseManager } from "../database/databaseManager";
 import { logError, logInfo } from "../logs/sentryLogger";
+import { UserInfoManager } from "../database/userInfoManager";
+import { CastsInfoManager } from "../database/castsInfoManager";
 
 const logsFilenamePath = getCurrentFilePath();
 
@@ -39,6 +41,8 @@ export class FarcasterHistoricalDataProcessor {
   private requestPageSize: number;
 
   private dbManager: DatabaseManager;
+  private userInfoManager: UserInfoManager;
+  private castsInfoManager: CastsInfoManager;
 
   // Temprorary
   private userDataWithReactions: CastInfoProps[];
@@ -69,6 +73,8 @@ export class FarcasterHistoricalDataProcessor {
     this.userDataWithReactions = new Array<CastInfoProps>();
 
     this.dbManager = DatabaseManager.getInstance();
+    this.userInfoManager = new UserInfoManager(fid);
+    this.castsInfoManager = new CastsInfoManager(fid);
   }
 
   /**
@@ -130,9 +136,20 @@ export class FarcasterHistoricalDataProcessor {
       }
     }
 
-    logInfo("Historical data fetching completed");
+    logInfo(`[DEBUG - ${logsFilenamePath}] Historical data fetching completed`);
     logInfo(
-      `Total number of casts that were processed: ${this.userHistoricalData.length}`
+      `[DEBUG - ${logsFilenamePath}] Total number of casts that were processed: ${this.userHistoricalData.length}`
+    );
+
+    await this.userInfoManager.addUserInfo();
+    logInfo(
+      `[DEBUG - ${logsFilenamePath}] User with a FID ${this.fid} was added to the users_info table`
+    );
+
+    await this.userInfoManager.markUserDataAsFetched();
+
+    logInfo(
+      `[DEBUG - ${logsFilenamePath}] Marked a FID ${this.fid} in the users_info table as fetched`
     );
   }
 
@@ -211,7 +228,7 @@ export class FarcasterHistoricalDataProcessor {
    */
   private async addBatchToDatabase(batch: CastInfoProps[]) {
     try {
-      await this.dbManager.addHistoricalData(this.fid, batch);
+      await this.castsInfoManager.addHistoricalData(batch);
       logInfo(
         `[DEBUG - ${logsFilenamePath}] 🚀 There were added ${batch.length} casts to the database for the ${this.fid} FID`
       );
@@ -238,7 +255,4 @@ export class FarcasterHistoricalDataProcessor {
   public getDataWithReactions() {
     return this.userDataWithReactions;
   }
-
-  // TODO: Prepare the method that can fetch user's fids for a specific period from a node
-  public fetchFidFollowers() {}
 }
