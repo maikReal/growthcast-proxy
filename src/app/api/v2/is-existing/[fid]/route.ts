@@ -9,6 +9,7 @@ import {
 import { DatabaseManager } from "@/utils/v2/database/databaseManager";
 import { logError } from "@/utils/v2/logs/sentryLogger";
 import { headers } from "next/headers";
+import { isExists } from "date-fns";
 
 const logsFilenamePath = getCurrentFilePath();
 
@@ -24,6 +25,9 @@ export async function GET(
   { params }: { params: { fid: string } }
 ) {
   const currentHeaders = headers();
+  const { searchParams } = new URL(request.url);
+
+  let isFetchedFlag: string | null = searchParams.get("is-fetched");
 
   if (!verifyAuth(currentHeaders)) {
     return nonAuthHttpResponse();
@@ -47,9 +51,34 @@ export async function GET(
 
     const queryResult = await dbManager.executeQuery(query, queryParams);
 
+    if (isFetchedFlag == "true") {
+      const queryIsFetched = `
+            SELECT EXISTS (
+                SELECT 1
+                FROM users_info
+                WHERE fid = $1 and is_data_fetched = true
+            )
+        `;
+
+      const queryParamsIsFetched = [params.fid];
+
+      const queryResultIsFetched = await dbManager.executeQuery(
+        queryIsFetched,
+        queryParamsIsFetched
+      );
+
+      return generateApiResponse(
+        { status: 200 },
+        {
+          isExist: queryResult?.rows[0].exists,
+          isFetched: queryResultIsFetched?.rows[0].exists,
+        }
+      );
+    }
+
     return generateApiResponse(
       { status: 200 },
-      { response: queryResult?.rows[0].exists }
+      { isExist: queryResult?.rows[0].exists }
     );
   } catch (err) {
     logError(
