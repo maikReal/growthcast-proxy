@@ -1,10 +1,7 @@
-import client from "@/clients/neynar";
 import jwt from "jsonwebtoken";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
-import {
-  RecommendedUserProp,
-  RecommendedUserRankProp,
-} from "./powerUserRecommendations";
+import { RecommendedUserProp } from "./powerUserRecommendations";
+import { logError } from "./v2/logs/sentryLogger";
 
 if (!process.env.NEXT_PUBLIC_ENCRYPTION_KEY) {
   throw new Error("ENCRYPTION_KEY is not defined in .env or .env.development");
@@ -93,14 +90,25 @@ export const successHttpResponse = (data?: any) => {
   });
 };
 
-export const internalServerErrorHttpResponse = (err: any) => {
+export const internalServerErrorHttpResponse = (
+  err: any,
+  filenamePath?: string
+) => {
+  if (filenamePath) {
+    logError(`[ERROR - ${filenamePath}] ${err}`);
+  }
+
   return new Response(JSON.stringify({ message: err }), {
     status: 500,
     headers: { "Access-Control-Allow-Origin": "https://warpcast.com" },
   });
 };
 
-export const apiErrorHttpResponse = (err: any) => {
+export const apiErrorHttpResponse = (err: any, filenamePath?: string) => {
+  if (filenamePath) {
+    logError(`[ERROR - ${filenamePath}] ${err}`);
+  }
+
   return new Response(JSON.stringify({ ...err.response.data }), {
     status: err.response.status,
     headers: { "Access-Control-Allow-Origin": "https://warpcast.com" },
@@ -269,4 +277,26 @@ export const removeFollowers = (
     }
   }
   return suggestedFollows;
+};
+
+// Get a filename path to use in logs
+export const getCurrentFilePath = () => {
+  const splittedFilepath = __filename.split("app");
+  const filepath = splittedFilepath ? splittedFilepath[1] : "Outer app/ folder";
+  return filepath;
+};
+
+export const farcasterTimestampToHumanReadable = (
+  farcasterTimestamp: number
+): string => {
+  // Unix timestamp for Farcaster Epoch (Jan 1, 2021, 00:00:00 UTC)
+  const farcasterEpoch = 1609459200; // This is the Unix timestamp for Jan 1, 2021, 00:00:00 UTC
+
+  // Convert Farcaster timestamp to Unix timestamp
+  const unixTimestamp = farcasterEpoch + farcasterTimestamp;
+
+  // Convert Unix timestamp to human-readable date
+  const humanReadableDate = new Date(unixTimestamp * 1000).toISOString();
+
+  return humanReadableDate;
 };

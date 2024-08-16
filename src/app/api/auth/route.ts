@@ -10,6 +10,32 @@ if (
   throw "ENCRYPTION_KEY or REFRESH_SECRET_KEY are not undentified";
 }
 
+/**
+ * @swagger
+ * /api/auth:
+ *   post:
+ *     summary: Generate the JWT authorization token
+ *     description: Generate the JWT authorization token
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: A successful response containing the JWT tokens
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: The JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: The JWT refresh token
+ *               example:
+ *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 refreshToken: "dGhpcy1pcy1hLXJlZnJlc2gtdG9rZW4tZXhhbXBsZQ=="
+ */
 export async function POST(request: NextRequest, response: NextApiResponse) {
   if (request.method === "POST") {
     const { username } = await request.json();

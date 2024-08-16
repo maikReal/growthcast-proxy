@@ -15,6 +15,39 @@ if (
   throw "NEXT_PUBLIC_ENCRYPTION_KEY or NEXT_PUBLIC_REFRESH_ENCRYPTION_KEY are not undentified";
 }
 
+/**
+ * @swagger
+ * /api/refresh-token:
+ *   post:
+ *     summary: Refresh JWT token
+ *     description: Generate a new JWT token if the previous one has expired
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *       description: The request body must contain the expired JWT token
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: The expired JWT token.
+ *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *     responses:
+ *       200:
+ *         description: A new JWT token that can be used for authorization
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: The new JWT access token
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ */
 export async function POST(request: NextRequest, response: NextApiResponse) {
   if (request.method === "POST") {
     const { token } = await request.json();

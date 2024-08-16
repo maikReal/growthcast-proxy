@@ -3,9 +3,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useApp } from "@/Context/AppContext";
 import useLocalStorage from "@/hooks/use-local-storage-state";
 import { ScreenState } from "@/Context/AppContext";
+import axios from "axios";
 
 import SignInButton from "@/components/SignInButton";
 import { Loader } from "@/components/loader";
+import { getCurrentFilePath } from "@/utils/helpers";
+import { logInfo } from "@/utils/v2/logs/sentryLogger";
+
+const logsFilenamePath = getCurrentFilePath();
 
 const Signin = () => {
   const { screen, setScreen } = useApp();
@@ -16,8 +21,7 @@ const Signin = () => {
 
   const publicDomain = process.env.NEXT_PUBLIC_DOMAIN;
 
-  console.log("Public domain: ", publicDomain);
-  console.log("Is client: ", isClient);
+  logInfo(`[DEBUG - ${logsFilenamePath}] Is a user client?: ${isClient}`);
   if (!publicDomain) {
     throw new Error("NEXT_PUBLIC_DOMAIN is not defined in .env");
   }
@@ -58,32 +62,52 @@ const Signin = () => {
   const { setSignerUuid, setFid } = useApp();
 
   useEffect(() => {
-    window.onSignInSuccess = (data) => {
-      // console.log("[DEBUG - Screens/Signin] User's auth data: ", {
-      //   signerUuid: data.signer_uuid,
-      //   fid: data.fid,
-      // });
-
+    window.onSignInSuccess = async (signinInfo) => {
       setIsConnectedWarpcast(true);
 
       localStorage.setItem(
         "user",
         JSON.stringify({
-          signerUuid: data.signer_uuid,
-          fid: data.fid,
+          signerUuid: signinInfo.signer_uuid,
+          fid: signinInfo.fid,
         })
       );
 
       setUser({
-        signerUuid: data.signer_uuid,
-        fid: data.fid,
+        signerUuid: signinInfo.signer_uuid,
+        fid: signinInfo.fid,
       });
 
-      console.log("User", user);
-      setSignerUuid(data.signer_uuid);
-      setFid(data.fid);
+      logInfo(`[DEBUG - ${logsFilenamePath}] Signed in user info: ${user}`);
+      setSignerUuid(signinInfo.signer_uuid);
+      setFid(signinInfo.fid);
 
       setScreen(ScreenState.Home);
+
+      // Check if we have info about a user
+      const { data } = await axios.get<{ response: boolean }>(
+        `/api/v2/is-existing/${signinInfo.fid}`
+      );
+
+      logInfo(
+        `[DEBUG - ${logsFilenamePath}] Did we fetched user's historical data?: ${data.response}`
+      );
+
+      if (data.response) {
+        // Update data if we have historical data
+        axios.get(`/api/v2/update-fid-history/${signinInfo.fid}`);
+
+        // logInfo(
+        //   `[DEBUG - ${logsFilenamePath}] Was user data updated?: ${data.response}`
+        // );
+      } else {
+        // Start fetching historical data
+        axios.get(`/api/v2/fetch-fid-history/${signinInfo.fid}`);
+
+        // logInfo(
+        //   `[DEBUG - ${logsFilenamePath}] Was user data fetched?: ${data.response}`
+        // );
+      }
 
       setTimeout(() => {
         window.location.href = publicDomain;
