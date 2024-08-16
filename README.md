@@ -1,55 +1,55 @@
-## Growthcast backend
+# Growthcast backend
 
-This repos contains the backend part of the Growthcast extension. The current repo contains the following main components:
+This repo contains the backend part of the Growthcast extension. The current repo contains the following main components:
 
 - API endpoints to interact with the extension (more details about the API endpoints)
-- The sign in page that can be used to login to a Farcaster account
+- The sign-in page that can be used to login to a Farcaster account
 
-Growthcast login page avilable by the following path:
+Growthcast login page is available by the following path:
 
-```planetext
+```plaintext
 http://localhost:3000/signin
 ```
 
-## Getting Started
+# Getting Started
 
 Requirements:
 
 1. Cloud or hardware server to:
    - Running Farcaster node
-   - Running PostgresSQL database (14.12+)
+   - Running PostgreSQL database (14.12+)
 2. Neynar API key. It could be generated on https://neynar.com
 3. npm: 10.5.0+
 4. Next.js: 14.2.4+
 
-### Farcaster node
+## Farcaster node
 
-To run the backend you need to have the running Farcaster node. To get more details how to laucnh your own Farcaster node, you can refer to [the following documentation](https://www.thehubble.xyz/intro/hubble.html)
+To run the backend you need to have the running Farcaster node. To get more details on how to launch your own Farcaster node, you can refer to [the following documentation](https://www.thehubble.xyz/intro/hubble.html)
 
 The basic server setup to run the Farcaster node:
 
 - 16 GB of RAM
 - 4 CPU cores or vCPUs
 - 200 GB of free storage
-- A public IP address with ports 2282 - 2285 exposed
+- A public IP address with ports 2282 - 2285 Exposed
 
-### PostgresSQL
+## PostgresSQL
 
-To run the backend you also need to have a running PostgreSQL database. It could be on the same server or on the separate one
+To run the backend you also need to have a running PostgreSQL database. It could be on the same server or on a separate one
 
 The requirement version is 14.12+
 
 The database schema is described in the following section:
 
-### NeynarSDK
+## NeynarSDK
 
-For the simplicity, some of endpoints are using NeynarSDK to get some Farcaster data. The login is also provided by NeynarSDK. If you don't want to use NeynarSDK, you need to re-write necessary endpoints to interacting with Farcaster Node as well as re-write the login process without using the SDK
+For simplicity, some of the endpoints use NeynarSDK to get Farcaster data. NeynarSDK also provides the login. If you don't want to use NeynarSDK, you need to re-write necessary endpoints to interact with Farcaster Node as well as re-write the login process without using the SDK
 
-To get the Neynar API key you need to go to https://neynar.com and buy the subscription. The key is available in the dev portal: https://dev.neynar.com
+To get the Neynar API key, go to https://neynar.com and buy the subscription. The key is available in the dev portal: https://dev.neynar.com
 
-### Enviroment variables
+## Enviroment variables
 
-To run the backend properly, you need to create a file with enviroment variables. You can use 2 different files for the development and production:
+To run the backend properly, you need to create a file with environment variables. You can use 2 different files for the development and production:
 
 - .env - for the production
 - .env.development - for the development
@@ -80,17 +80,17 @@ The more details about variables will be described in the table below:
 | `POSTGRES_V2_HOST`                   | PostgreSQL host                         | `135.181.142.175`                                                                                                                                                                                     |
 | `POSTGRES_V2_DATABASE`               | PostgreSQL database name                | `growthcast_dev`                                                                                                                                                                                      |
 
-### Installation guide
+## Installation guide
 
 The following steps should be completed before starting the further installation:
 
-- [x] Laucnh the server
+- [x] Launch the server
 - [x] Run a Farcaster node
 - [x] Run a PostgreSQL database
-- [x] Create file with enviroment variables
+- [x] Create a file with environmental variables
 - [x] Create and add the Neynar API key to the .env / .env.development
 
-Right after all steps above will be completed, you can laucnh the backend!
+Right after all the steps above are completed, you can launch the backend!
 
 1. Install all necessary dependencies:
 
@@ -104,17 +104,17 @@ Right after all steps above will be completed, you can laucnh the backend!
    npm run dev
    ```
 
-3. The backend API is available through http://localhost:3000/api. The sign in is available by http://localhost:3000/signin URL
+3. The backend API is available through http://localhost:3000/api. The sign-in is available at **http://localhost:3000/signin** URL
 
-### Deployment guide
+## Deployment guide
 
-### Deploy on Vercel
+## Deploy on Vercel
 
 You can deploy the backend in one click:
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/maikReal/growthcast-proxy)
 
-Make sure to add the enviroment variables for your Vercel project. Get more details about the envs on the following section:
+Make sure to add the environment variables for your Vercel project. Get more details about the envs on the following section:
 
 You can also deploy the project to Vercel manually using the bash command:
 
@@ -124,11 +124,11 @@ vercel
 
 Make sure that you've installed the Vercel with the ... version
 
-## Techincal details
+# Techincal details
 
-Below there will be describe some technical details about API, PostgreSQL, and Farcaster data processing
+Below there will describe some technical details about API, PostgreSQL, and Farcaster data processing
 
-### API endpoints
+## API endpoints
 
 The API endpoints swagger is available by the following URL:
 
@@ -136,18 +136,18 @@ The API endpoints swagger is available by the following URL:
 http://localhost:3000/api-doc
 ```
 
-### PostgreSQL
+## PostgreSQL
 
-There are several database tables that are mainly used by the backend:
+Several database tables are mainly used by the backend:
 
 - **users_casts_historical_data**
-  Stores pre-processed information about users casts for the whole user's casts history
+  Stores pre-processed information about user's casts for the whole user's cast history
 - **users_info**
   Stores the basic pre-processed data about a user and his activity on Farcaster
 
 All tables will be automatically created during the first launch. The only thing that you need to do is to create the database that should have the "growthcast" name and "growthcast_dev" for the development database
 
-#### Schemas
+### Schemas
 
 **users_all_historical_data** table schema:
 
@@ -181,19 +181,19 @@ CREATE TABLE IF NOT EXISTS users_info (
 	)
 ```
 
-### Data processing logic
+## Data processing logic
 
 The logic of the FarcasterDataProcessor and FarcasterReactionsDataProcessor is described on the schema below
 
 > **TLDR:**
 >
 > - User logins to the Growthcast
-> - Starting to fetch his data from current day to his first day until his first day by batches
-> - Adding batches of data to database, so a service can get access to data without waiting for fethcing of all data
+> - Starting to fetch his data from the current day to his first day until his first day by batches
+> - Adding batches of data to the database, so a service can get access to data without waiting for fetching of all data
 
 ![growthcast-backend-schema](https://raw.githubusercontent.com/maikReal/growthcast-proxy/main/public/growthcast-logic.jpg?raw=true)
 
-## License
+# License
 
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
 
