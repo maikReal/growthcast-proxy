@@ -191,7 +191,7 @@ The logic of the FarcasterDataProcessor and FarcasterReactionsDataProcessor is d
 > - Starting to fetch his data from the current day to his first day until his first day by batches
 > - Adding batches of data to the database, so a service can get access to data without waiting for fetching of all data
 
-![growthcast-backend-schema](https://raw.githubusercontent.com/maikReal/growthcast-proxy/main/public/growthcast-logic.jpg?raw=true)
+![growthcast-backend-schema](https://github.com/maikReal/growthcast-proxy/blob/main/public/growthcast-logic.jpg?raw=true)
 
 # License
 
