@@ -17,31 +17,44 @@ import {
 const logsFilenamePath = getCurrentFilePath();
 
 /**
- * The endpoint to fetch user's data for a specific period
- * All data is inserting to "users_casts_historical_data" table on PostgreSQL
- * The following data is added to the table:
- * - fid
- * - cast_text
- * - cast_timestamp
- * - cast_hash
- * - cast_likes
- * - cast_replies
- * - cast_recasts
- *
- * URL params:
- * - [OPTIONAL] period: null | 60 | 90
- *
- * If the period param wasn't provided, the endpoint will fetch data for the last year
- *
- * Request example:
- * ```
- *  http://localhost:3000/api/v2/fetch-fid-history/14069
- * ```
- *
- * @param request
- * @param param1
- * @returns
+ * @swagger
+ * /api/v2/fetch-fid-history/{fid}:
+ *   get:
+ *     summary: Fetch user's historical data for a specific period
+ *     description: This endpoint fetches the user's historical data (casts) for a specific period and stores it in the PostgreSQL table "users_casts_historical_data". If the `period` parameter is not provided, the endpoint fetches data for the last year by default
+ *     parameters:
+ *       - in: path
+ *         name: fid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The unique fid of the user whose historical data is being fetched
+ *       - in: query
+ *         name: period
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           enum: [60, 90]
+ *           description: The period (in days) to fetch the data for. If not provided, the last year's data is fetched
+ *         example: 60
+ *     responses:
+ *       200:
+ *         description: Historical data was successfully fetched and stored
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: boolean
+ *                   description: Indicates whether the data fetch was successful
+ *                   example: true
+ *       401:
+ *         description: Unauthorized if authentication fails
+ *       500:
+ *         description: Internal Server Error if something goes wrong during processing
  */
+
 export const GET = async (
   request: NextRequest,
   { params }: { params: { fid: number } }

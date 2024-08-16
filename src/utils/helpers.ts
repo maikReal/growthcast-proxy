@@ -1,10 +1,6 @@
-import client from "@/clients/neynar";
 import jwt from "jsonwebtoken";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
-import {
-  RecommendedUserProp,
-  RecommendedUserRankProp,
-} from "./powerUserRecommendations";
+import { RecommendedUserProp } from "./powerUserRecommendations";
 import { logError } from "./v2/logs/sentryLogger";
 
 if (!process.env.NEXT_PUBLIC_ENCRYPTION_KEY) {

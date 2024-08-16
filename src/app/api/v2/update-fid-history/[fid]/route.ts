@@ -15,14 +15,32 @@ import { NextRequest } from "next/server";
 const logsFilenamePath = getCurrentFilePath();
 
 /**
- * The endpoint to update a user's analytics and add recent casts to the database.
- * Taking the last fetch data date and adding casts timestamp of which is less then the last fetch data date in the table
- *
- *
- * @param request
- * @param param1
- * @returns
+ * @swagger
+ * /api/v2/update-user-analytics/{fid}:
+ *   get:
+ *     summary: Update user analytics and add recent casts to the database
+ *     description: This endpoint updates a user's analytics by fetching recent casts that have timestamps greater than the last fetch date stored in the database. The new data is then added to the database
+ *     parameters:
+ *       - in: path
+ *         name: fid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The unique fid of the user whose analytics are being updated
+ *     responses:
+ *       200:
+ *         description: Successfully updated the user's analytics and added recent casts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: boolean
+ *                   description: Indicates whether the user's information was successfully updated
+ *                   example: true
  */
+
 export const GET = async (
   request: NextRequest,
   { params }: { params: { fid: number } }

@@ -9,16 +9,46 @@ import {
 import { DatabaseManager } from "@/utils/v2/database/databaseManager";
 import { logError } from "@/utils/v2/logs/sentryLogger";
 import { headers } from "next/headers";
-import { isExists } from "date-fns";
 
 const logsFilenamePath = getCurrentFilePath();
 
 /**
- * The endpoint to get the response of we previously fetched user's historical data or not
- *
- * @param request
- * @param param1
- * @returns
+ * @swagger
+ * /api/v2/user-historical-data-status/{fid}:
+ *   get:
+ *     summary: Check if a user's historical data has been fetched
+ *     description: This endpoint checks whether a user's historical data has been previously fetched. It can also check if the data is marked as fetched based on a query parameter
+ *     parameters:
+ *       - in: path
+ *         name: fid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique fid of the user whose data status is being checked
+ *       - in: query
+ *         name: is-fetched
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: A flag to indicate if the check should include whether the data is marked as fetched
+ *         example: "true"
+ *     responses:
+ *       200:
+ *         description: Successfully checked the data status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isExist:
+ *                   type: boolean
+ *                   description: Indicates whether the user's historical data exists in the database
+ *                   example: true
+ *                 isFetched:
+ *                   type: boolean
+ *                   description: Indicates whether the user's data is marked as fetched
+ *                   example: true
  */
 export async function GET(
   request: NextRequest,

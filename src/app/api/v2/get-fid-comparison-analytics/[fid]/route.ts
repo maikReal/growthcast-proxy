@@ -16,22 +16,52 @@ const logsFilenamePath = getCurrentFilePath();
 export type ComparisonAnalyticsDataPeriods = 7 | 14 | 28;
 
 /**
- * The route to get a fid's comparison analytics for last 60 days of his posts.
- * Likes, recasts, replies, and the number of casts will be included to this statistic
- * All information is available directly on the PostgreSQL database
- *
- * URL params:
- * - [MANDATORY] period: 7 | 14 | 28
- *
- * Request example:
- * ```
- *  http://localhost:3000/api/v2/get-fid-comparison-analytics/14069?period=7
- * ```
- *
- * @param request
- * @param params
- * @returns
+ * @swagger
+ * /api/v2/get-fid-comparison-analytics/{fid}:
+ *   get:
+ *     summary: Fetch comparison analytics for a user's posts over a specified period
+ *     description: This endpoint retrieves a user's comparison analytics (likes, recasts, replies, and the number of casts) for the last 60 days of their posts. The data is fetched from a PostgreSQL database
+ *     parameters:
+ *       - in: path
+ *         name: fid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The unique fid of the user whose comparison analytics are being fetched
+ *       - in: query
+ *         name: period
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           enum: [7, 14, 28]
+ *           description: The period (in days) over which to calculate the comparison analytics
+ *         example: 7
+ *     responses:
+ *       200:
+ *         description: Successfully fetched the comparison analytics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 likes:
+ *                   type: integer
+ *                   description: The total number of likes within the specified period
+ *                   example: 150
+ *                 recasts:
+ *                   type: integer
+ *                   description: The total number of recasts within the specified period
+ *                   example: 45
+ *                 replies:
+ *                   type: integer
+ *                   description: The total number of replies within the specified period
+ *                   example: 30
+ *                 casts:
+ *                   type: integer
+ *                   description: The total number of casts within the specified period
+ *                   example: 60
  */
+
 export const GET = async (
   request: NextRequest,
   { params }: { params: { fid: number } }

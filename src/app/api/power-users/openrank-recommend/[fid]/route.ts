@@ -6,7 +6,44 @@ import {
   verifyAuth,
   unprocessableHttpResponse,
   generateApiResponse,
+  getCurrentFilePath,
 } from "@/utils/helpers";
+import { logError, logInfo } from "@/utils/v2/logs/sentryLogger";
+
+const logsFilenamePath = getCurrentFilePath();
+
+/**
+ * @swagger
+ * /api/v2/power-users/openrank-recommend/{fid}:
+ *   get:
+ *     summary: Fetch recommended FIDs for a user
+ *     description: This endpoint retrieves a list of recommended FIDs (user identifiers) for a specific user based on their engagement. The recommendations are fetched from the OpenRank system
+ *     parameters:
+ *       - in: path
+ *         name: fid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The unique fid of the user for whom recommendations are being fetched
+ *     responses:
+ *       200:
+ *         description: Successfully fetched the recommended FIDs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   fid:
+ *                     type: integer
+ *                     description: The recommended user's fid
+ *                     example: 12345
+ *                   engagementScore:
+ *                     type: number
+ *                     description: The engagement score of the recommended user
+ *                     example: 87.5
+ */
 
 export const GET = async (
   request: NextRequest,
@@ -18,9 +55,7 @@ export const GET = async (
     return nonAuthHttpResponse();
   }
 
-  console.log(
-    "[DEBUG - api/power-users/openrank-recommend/[fid]] Fetching user's recommended fids..."
-  );
+  logInfo(`[DEBUG - ${logsFilenamePath}] Fetching user's recommended fids...`);
   try {
     if (!params.fid) {
       return unprocessableHttpResponse();
@@ -39,17 +74,13 @@ export const GET = async (
 
     if (userRecommendationsResponse.ok) {
       const { result } = await userRecommendationsResponse.json();
-      console.log("data:", result.slice(0, 5));
 
       return generateApiResponse({ status: 200 }, result);
     } else {
       return generateApiResponse(userRecommendationsResponse);
     }
   } catch (err) {
-    console.error(
-      "[ERROR - api/power-users/openrank-recommend/[fid]] Error occured: ",
-      err
-    );
+    logError(`[ERROR - ${logsFilenamePath}] Error occured: ${err}`);
     return internalServerErrorHttpResponse(err);
   }
 };
